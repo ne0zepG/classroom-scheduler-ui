@@ -9,7 +9,7 @@ interface ScheduleDisplay {
   id: number;
   roomId: number;
   purpose: string;
-  bookedBy: string;
+  scheduledBy: string;
   startTime: Date;
   endTime: Date;
   status: string;
@@ -18,7 +18,7 @@ interface ScheduleDisplay {
 interface TimeSlot {
   time: string;
   schedule?: ScheduleDisplay;
-  isBooked: boolean;
+  isScheduled: boolean;
 }
 
 @Component({
@@ -116,7 +116,7 @@ export class StatisticsComponent implements OnInit {
             id: schedule.id,
             roomId: schedule.roomId,
             purpose: schedule.purpose,
-            bookedBy: schedule.userName,
+            scheduledBy: schedule.userName,
             startTime: new Date(schedule.date + 'T' + schedule.startTime),
             endTime: new Date(schedule.date + 'T' + schedule.endTime),
             status: schedule.status,
@@ -139,17 +139,17 @@ export class StatisticsComponent implements OnInit {
 
     // Generate morning slots (7:00 AM - 12:00 PM)
     for (let hour = 7; hour < 12; hour++) {
-      this.morningSlots.push({ time: `${hour}:00 AM`, isBooked: false });
-      this.morningSlots.push({ time: `${hour}:30 AM`, isBooked: false });
+      this.morningSlots.push({ time: `${hour}:00 AM`, isScheduled: false });
+      this.morningSlots.push({ time: `${hour}:30 AM`, isScheduled: false });
     }
-    this.morningSlots.push({ time: `12:00 PM`, isBooked: false });
+    this.morningSlots.push({ time: `12:00 PM`, isScheduled: false });
 
     // Generate afternoon slots (12:30 PM - 9:00 PM)
-    this.afternoonSlots.push({ time: `12:30 PM`, isBooked: false });
+    this.afternoonSlots.push({ time: `12:30 PM`, isScheduled: false });
     for (let hour = 1; hour <= 9; hour++) {
-      this.afternoonSlots.push({ time: `${hour}:00 PM`, isBooked: false });
+      this.afternoonSlots.push({ time: `${hour}:00 PM`, isScheduled: false });
       if (hour < 9) {
-        this.afternoonSlots.push({ time: `${hour}:30 PM`, isBooked: false });
+        this.afternoonSlots.push({ time: `${hour}:30 PM`, isScheduled: false });
       }
     }
   }
@@ -189,10 +189,10 @@ export class StatisticsComponent implements OnInit {
         }
 
         if (isWithinSchedule) {
-          slot.isBooked = true;
+          slot.isScheduled = true;
           slot.schedule = schedule;
           console.log(
-            `Marked slot ${slot.time} as booked for ${schedule.purpose}`
+            `Marked slot ${slot.time} as scheduled for ${schedule.purpose}`
           );
         }
       });

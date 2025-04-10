@@ -104,12 +104,12 @@
       <tbody>
         <tr
           *ngFor="let slot of morningSlots"
-          [class.table-secondary]="slot.isBooked"
+          [class.table-secondary]="slot.isScheduled"
         >
           <td>{{ slot.time }}</td>
           <td>
-            <span *ngIf="slot.isBooked" class="badge bg-danger">Occupied</span>
-            <span *ngIf="!slot.isBooked" class="badge bg-success"
+            <span *ngIf="slot.isScheduled" class="badge bg-danger">Occupied</span>
+            <span *ngIf="!slot.isScheduled" class="badge bg-success"
               >Available</span
             >
           </td>
@@ -117,7 +117,7 @@
             <div *ngIf="slot.schedule">
               <strong>Course / Purpose:</strong> {{ slot.schedule.purpose
               }}<br />
-              <strong>Instructor:</strong> {{ slot.schedule.bookedBy }}<br />
+              <strong>Instructor:</strong> {{ slot.schedule.scheduledBy }}<br />
               <strong>Status:</strong>
               <span
                 class="badge mx-1"
@@ -126,7 +126,7 @@
                 {{ slot.schedule.status }}
               </span>
             </div>
-            <em *ngIf="!slot.schedule">Not booked</em>
+            <em *ngIf="!slot.schedule">No schedule</em>
           </td>
         </tr>
       </tbody>
@@ -149,12 +149,12 @@
       <tbody>
         <tr
           *ngFor="let slot of afternoonSlots"
-          [class.table-secondary]="slot.isBooked"
+          [class.table-secondary]="slot.isScheduled"
         >
           <td>{{ slot.time }}</td>
           <td>
-            <span *ngIf="slot.isBooked" class="badge bg-danger">Occupied</span>
-            <span *ngIf="!slot.isBooked" class="badge bg-success"
+            <span *ngIf="slot.isScheduled" class="badge bg-danger">Occupied</span>
+            <span *ngIf="!slot.isScheduled" class="badge bg-success"
               >Available</span
             >
           </td>
