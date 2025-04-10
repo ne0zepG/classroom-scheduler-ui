@@ -4,8 +4,8 @@
       <button class="btn btn-outline-primary me-3" (click)="goBack()">
         <i class="bi bi-arrow-left"></i> Back
       </button>
-      <h2 class="mb-0">Admin Dashboard</h2>
-    </div> 
+      <h2 class="mb-0">Admin Control</h2>
+    </div>
   </div>
 
   <!-- Admin Tools Section -->
@@ -20,7 +20,7 @@
           <div class="display-4 mb-3 text-primary">
             <i class="bi bi-graph-up"></i>
           </div>
-          <h3 class="h5 card-title">Schedule Classrooms</h3>
+          <h3 class="h5 card-title">Manage Schedules</h3>
           <p class="card-text">
             Schedule classrooms for courses with an intuitive scheduling
             interface
@@ -29,12 +29,16 @@
       </div>
     </div>
     <div class="col-md-6 col-lg-3">
-      <div class="card h-100 shadow-sm" style="cursor: pointer">
+      <div
+        class="card h-100 shadow-sm"
+        style="cursor: pointer"
+        routerLink="/requests"
+      >
         <div class="card-body text-center">
           <div class="display-4 mb-3 text-primary">
             <i class="bi bi-building"></i>
           </div>
-          <h3 class="h5 card-title">Manage Classrooms</h3>
+          <h3 class="h5 card-title">Manage Requests</h3>
           <p class="card-text">
             Approve, reject, and manage classroom requests from faculty and
             staff
