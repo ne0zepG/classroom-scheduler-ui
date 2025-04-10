@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Room, RoomApiService } from '../../services/roomApi';
 import { ScheduleApiService } from '../../services/scheduleApi';
+import { Router } from '@angular/router';
 
 interface ScheduleDisplay {
   id: number;
@@ -44,7 +45,8 @@ export class StatisticsComponent implements OnInit {
 
   constructor(
     private scheduleApiService: ScheduleApiService,
-    private roomApiService: RoomApiService
+    private roomApiService: RoomApiService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -242,5 +244,12 @@ export class StatisticsComponent implements OnInit {
       default:
         return 'bg-warning';
     }
+  }
+
+  /**
+   * Navigates back to the home page.
+   */
+  goBack() {
+    this.router.navigate(['/home']);
   }
 }

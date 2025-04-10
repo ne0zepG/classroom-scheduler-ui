@@ -1,5 +1,12 @@
 <div class="container mt-4">
-  <h2 class="mb-4">Classroom Occupancy Statistics</h2>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+      <button class="btn btn-outline-primary me-3" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+      <h2 class="mb-0">Classroom Occupancy Statistics</h2>
+    </div>
+  </div>
 
   <!-- Filters -->
   <div class="row mb-4 align-items-end">
@@ -108,7 +115,9 @@
         >
           <td>{{ slot.time }}</td>
           <td>
-            <span *ngIf="slot.isScheduled" class="badge bg-danger">Occupied</span>
+            <span *ngIf="slot.isScheduled" class="badge bg-danger"
+              >Occupied</span
+            >
             <span *ngIf="!slot.isScheduled" class="badge bg-success"
               >Available</span
             >
@@ -153,7 +162,9 @@
         >
           <td>{{ slot.time }}</td>
           <td>
-            <span *ngIf="slot.isScheduled" class="badge bg-danger">Occupied</span>
+            <span *ngIf="slot.isScheduled" class="badge bg-danger"
+              >Occupied</span
+            >
             <span *ngIf="!slot.isScheduled" class="badge bg-success"
               >Available</span
             >

@@ -6,7 +6,7 @@ import { AdminControlComponent } from './components/admin-control/admin-control.
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'home',
     component: HomePageComponent,
     title: 'Home',
   },
