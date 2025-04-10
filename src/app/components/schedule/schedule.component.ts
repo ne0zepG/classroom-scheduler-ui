@@ -23,16 +23,6 @@ import { DeleteModalComponent } from '../delete-modal/delete-modal.component';
   imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
-  styles: [
-    `
-      .pagination .page-link {
-        cursor: pointer;
-      }
-      .pagination .page-item.disabled .page-link {
-        cursor: not-allowed;
-      }
-    `,
-  ],
 })
 export class ScheduleComponent implements OnInit {
   schedules: ScheduleWithBuilding[] = [];
@@ -241,13 +231,8 @@ export class ScheduleComponent implements OnInit {
               (schedule) => schedule.id !== id
             );
 
-            // If no search or sort is applied, directly update filtered schedules too
-            if (!this.searchTerm && !this.sortColumn.column) {
-              this.filteredSchedules = [...this.schedules];
-            } else {
-              // Otherwise apply filters to get the updated list
-              this.applyFilters();
-            }
+            // Always call applyFilters() to update all dependent arrays
+            this.applyFilters();
           },
           error: (error: any) => {
             console.error('Error deleting schedule:', error);
@@ -255,23 +240,6 @@ export class ScheduleComponent implements OnInit {
           },
         });
       }
-    });
-
-    // When successful delete happens:
-    this.scheduleApiService.deleteSchedule(id).subscribe({
-      next: () => {
-        // Update the main schedules array
-        this.schedules = this.schedules.filter(
-          (schedule) => schedule.id !== id
-        );
-
-        // Apply filters again to update pagination
-        this.applyFilters();
-      },
-      error: (error: any) => {
-        console.error('Error deleting schedule:', error);
-        this.errorMessage = 'Failed to delete schedule. Please try again.';
-      },
     });
   }
 
