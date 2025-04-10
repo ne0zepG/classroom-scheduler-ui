@@ -7,8 +7,9 @@
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-.btn-group .btn {
-  padding: 0.25rem 0.5rem;
+.dropdown-item.active {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #212529;
 }
 
 // Styles for sortable columns
@@ -37,8 +38,9 @@ th {
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-// Style for small text
-small.text-muted {
-  display: block;
-  margin-top: 0.25rem;
+.pagination .page-link {
+  cursor: pointer;
+}
+.pagination .page-item.disabled .page-link {
+  cursor: not-allowed;
 }
