@@ -23,16 +23,6 @@ import { DeleteModalComponent } from '../delete-modal/delete-modal.component';
   imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
-  styles: [
-    `
-      .pagination .page-link {
-        cursor: pointer;
-      }
-      .pagination .page-item.disabled .page-link {
-        cursor: not-allowed;
-      }
-    `,
-  ],
 })
 export class ScheduleComponent implements OnInit {
   schedules: ScheduleWithBuilding[] = [];
