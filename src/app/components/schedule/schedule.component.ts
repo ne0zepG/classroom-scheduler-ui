@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
 import { Room, RoomApiService } from '../../services/roomApi';
@@ -65,7 +65,8 @@ export class ScheduleComponent implements OnInit {
   constructor(
     private scheduleApiService: ScheduleApiService,
     private roomApiService: RoomApiService,
-    private modalService: NgbModal
+    private modalService: NgbModal,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -482,5 +483,12 @@ export class ScheduleComponent implements OnInit {
     }
 
     return pages;
+  }
+
+  /**
+   * Navigates back to the admin page.
+   */
+  goBack() {
+    this.router.navigate(['/admin']);
   }
 }
