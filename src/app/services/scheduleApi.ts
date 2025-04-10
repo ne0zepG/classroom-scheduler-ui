@@ -94,6 +94,19 @@ export class ScheduleApiService {
       .pipe(catchError(this.handleError));
   }
 
+  // Update schedule status in batch`
+  updateScheduleStatusBatch(
+    ids: number[],
+    status: 'PENDING' | 'APPROVED' | 'REJECTED'
+  ): Observable<Schedule[]> {
+    return this.http
+      .patch<Schedule[]>(`${this.apiUrl}/batch/status`, {
+        ids: ids,
+        status: status,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
   // Error handling
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred!';

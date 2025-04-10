@@ -6,14 +6,15 @@ import {
   ScheduleWithBuilding,
 } from '../../services/scheduleApi';
 import { Room, RoomApiService } from '../../services/roomApi';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of, switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SortColumn, sortData } from '../../utils/sortTable';
 import { searchData } from '../../utils/searchTable';
+import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
 
 @Component({
   selector: 'app-request',
@@ -60,10 +61,22 @@ export class RequestComponent implements OnInit {
   paginatedSchedules: ScheduleWithBuilding[] = [];
   Math = Math;
 
+  selectedSchedules: { [key: number]: boolean } = {};
+  selectAll: boolean = false;
+  get selectedCount(): number {
+    return Object.values(this.selectedSchedules).filter(Boolean).length;
+  }
+  get selectedScheduleIds(): number[] {
+    return Object.entries(this.selectedSchedules)
+      .filter(([_, selected]) => selected)
+      .map(([id, _]) => Number(id));
+  }
+
   constructor(
     private scheduleApiService: ScheduleApiService,
     private roomApiService: RoomApiService,
-    private router: Router
+    private router: Router,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -253,6 +266,9 @@ export class RequestComponent implements OnInit {
       startIndex,
       endIndex
     );
+
+    // Update the selected schedules based on the paginated schedules
+    this.updateSelectAllState();
   }
 
   /**
@@ -322,5 +338,104 @@ export class RequestComponent implements OnInit {
     }
 
     return pages;
+  }
+
+  // Toggle selection for a single schedule
+  toggleSelection(scheduleId: number): void {
+    this.selectedSchedules[scheduleId] = !this.selectedSchedules[scheduleId];
+
+    // Check if all visible schedules are selected
+    this.updateSelectAllState();
+  }
+
+  // Toggle selection for all schedules
+  toggleSelectAll(): void {
+    this.selectAll = !this.selectAll;
+
+    // Apply selection state to all visible schedules
+    this.paginatedSchedules.forEach((schedule) => {
+      this.selectedSchedules[schedule.id] = this.selectAll;
+    });
+  }
+
+  // Update the selectAll checkbox state based on individual selections
+  updateSelectAllState(): void {
+    if (this.paginatedSchedules.length === 0) {
+      this.selectAll = false;
+      return;
+    }
+
+    const allSelected = this.paginatedSchedules.every(
+      (schedule) => this.selectedSchedules[schedule.id]
+    );
+    this.selectAll = allSelected;
+  }
+
+  // Clear all selections
+  clearSelections(): void {
+    this.selectedSchedules = {};
+    this.selectAll = false;
+  }
+
+  // Open bulk action modal
+  openBulkActionModal(action: 'PENDING' | 'APPROVED' | 'REJECTED'): void {
+    if (this.selectedCount === 0) return;
+
+    const modalRef = this.modalService.open(BulkActionModalComponent, {
+      centered: true,
+    });
+
+    // Pass data to modal
+    modalRef.componentInstance.actionType = action;
+    modalRef.componentInstance.count = this.selectedCount;
+
+    // Handle the result when modal is closed
+    modalRef.closed.subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.executeBulkAction(action);
+      }
+    });
+  }
+
+  // Execute bulk action
+  executeBulkAction(action: 'PENDING' | 'APPROVED' | 'REJECTED'): void {
+    // Show loading state
+    this.isLoading = true;
+
+    const selectedIds = this.selectedScheduleIds;
+
+    // Use the batch update endpoint instead of sequential calls
+    this.scheduleApiService
+      .updateScheduleStatusBatch(selectedIds, action)
+      .subscribe({
+        next: (updatedSchedules) => {
+          // Update all schedules in our list at once
+          updatedSchedules.forEach((updatedSchedule) => {
+            const index = this.schedules.findIndex(
+              (s) => s.id === updatedSchedule.id
+            );
+            if (index !== -1) {
+              this.schedules[index].status = updatedSchedule.status;
+            }
+          });
+
+          // Apply filters to refresh the view with updated data
+          this.applyFilters();
+
+          // Display success message
+          const message = `Successfully updated ${updatedSchedules.length} schedule(s)`;
+          // You can add a success message display here if desired
+
+          // Clear selections
+          this.clearSelections();
+
+          // Hide loading spinner
+          this.isLoading = false;
+        },
+        error: (error) => {
+          this.errorMessage = `Failed to update schedules. Please try again.`;
+          this.isLoading = false;
+        },
+      });
   }
 }
