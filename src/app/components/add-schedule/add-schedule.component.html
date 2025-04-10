@@ -86,11 +86,26 @@
       </div>
     </div>
 
+    <!-- Recurring schedule option -->
+    <div class="mb-3 form-check">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        id="isRecurring"
+        formControlName="isRecurring"
+      />
+      <label class="form-check-label" for="isRecurring"
+        >Recurring schedule</label
+      >
+    </div>
+
     <!-- Date, Start Time, End Time in a single row -->
     <div class="row g-3">
-      <!-- Date picker -->
+      <!-- Date picker - rename to Start Date when recurring -->
       <div class="col-md-4 mb-3">
-        <label for="date" class="form-label">Date</label>
+        <label for="date" class="form-label">{{
+          isRecurring ? "Start Date" : "Date"
+        }}</label>
         <input
           type="date"
           class="form-control"
@@ -101,11 +116,34 @@
         <div
           *ngIf="
             scheduleForm.get('date')?.invalid &&
-            (scheduleForm.get('date')?.dirty || scheduleForm.get('date')?.touched)
+            (scheduleForm.get('date')?.dirty ||
+              scheduleForm.get('date')?.touched)
           "
           class="text-danger small"
         >
           Please select a valid date
+        </div>
+      </div>
+
+      <!-- End date (show only if recurring) -->
+      <div class="col-md-4 mb-3" *ngIf="isRecurring">
+        <label for="endDate" class="form-label">End Date</label>
+        <input
+          type="date"
+          class="form-control"
+          id="endDate"
+          formControlName="endDate"
+          [min]="scheduleForm.get('date')?.value || today"
+        />
+        <div
+          *ngIf="
+            scheduleForm.get('endDate')?.invalid &&
+            (scheduleForm.get('endDate')?.dirty ||
+              scheduleForm.get('endDate')?.touched)
+          "
+          class="text-danger small"
+        >
+          Please select an end date
         </div>
       </div>
 
@@ -148,6 +186,29 @@
           class="text-danger small"
         >
           Please select an end time
+        </div>
+      </div>
+
+      <!-- Days of week selection (show only if recurring) - moved into the same row -->
+      <div class="col-md-8 mb-3" *ngIf="isRecurring">
+        <label class="form-label">Repeat On</label>
+        <div class="d-flex flex-wrap gap-2">
+          <div *ngFor="let day of daysOfWeek" class="btn-group" role="group">
+            <button
+              type="button"
+              class="btn"
+              [ngClass]="day.selected ? 'btn-primary' : 'btn-outline-secondary'"
+              (click)="toggleDay(day)"
+            >
+              {{ day.name.substring(0, 1) }}
+            </button>
+          </div>
+        </div>
+        <div
+          *ngIf="isRecurring && areNoDaysSelected()"
+          class="text-danger small mt-2"
+        >
+          Please select at least one day
         </div>
       </div>
     </div>
@@ -200,7 +261,9 @@
   <button
     type="button"
     class="btn btn-primary"
-    [disabled]="scheduleForm.invalid || isLoading"
+    [disabled]="
+      scheduleForm.invalid || isLoading || (isRecurring && areNoDaysSelected())
+    "
     (click)="onSubmit()"
   >
     <span

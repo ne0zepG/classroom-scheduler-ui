@@ -12,7 +12,11 @@ import {
   FilterByBuildingPipe,
   RoomsByBuildingPipe,
 } from '../../utils/roomPipes';
-import { Schedule, ScheduleApiService } from '../../services/scheduleApi';
+import {
+  RecurringScheduleRequest,
+  Schedule,
+  ScheduleApiService,
+} from '../../services/scheduleApi';
 
 @Component({
   selector: 'app-add-schedule',
@@ -41,6 +45,16 @@ export class AddScheduleComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   today = new Date().toISOString().split('T')[0]; // For min date in date picker
+  isRecurring = false;
+  daysOfWeek = [
+    { id: 1, name: 'Monday', selected: false },
+    { id: 2, name: 'Tuesday', selected: false },
+    { id: 3, name: 'Wednesday', selected: false },
+    { id: 4, name: 'Thursday', selected: false },
+    { id: 5, name: 'Friday', selected: false },
+    { id: 6, name: 'Saturday', selected: false },
+    { id: 0, name: 'Sunday', selected: false },
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -60,7 +74,27 @@ export class AddScheduleComponent implements OnInit {
           Validators.maxLength(200),
         ],
       ],
+      isRecurring: [false],
+      endDate: [''],
+      daysOfWeek: this.fb.array([]),
     });
+
+    // Update validators based on isRecurring
+    this.scheduleForm
+      .get('isRecurring')
+      ?.valueChanges.subscribe((isRecurring) => {
+        this.isRecurring = isRecurring;
+
+        if (isRecurring) {
+          this.scheduleForm
+            .get('endDate')
+            ?.setValidators([Validators.required]);
+          // Rename date field label to startDate
+        } else {
+          this.scheduleForm.get('endDate')?.clearValidators();
+        }
+        this.scheduleForm.get('endDate')?.updateValueAndValidity();
+      });
   }
 
   // Initialize the component
@@ -125,6 +159,7 @@ export class AddScheduleComponent implements OnInit {
     // Format date as YYYY-MM-DD
     let dateObj = new Date(formValue.date);
     const formattedDate = dateObj.toISOString().split('T')[0];
+    const startDate = new Date(formValue.date).toISOString().split('T')[0];
 
     // Format times as HH:MM:00
     const startTime = this.formatTime(formValue.startTime);
@@ -160,33 +195,94 @@ export class AddScheduleComponent implements OnInit {
           },
         });
     } else {
-      // Original add functionality
-      const newSchedule: Partial<Schedule> = {
-        roomId: Number(formValue.roomId),
-        roomNumber: this.selectedRoom?.roomNumber || '',
-        userId: this.userId,
-        userName: this.userName,
-        date: formattedDate,
-        startTime: startTime,
-        endTime: endTime,
-        purpose: formValue.purpose,
-        status: 'PENDING',
-      };
+      if (formValue.isRecurring) {
+        // Create recurring schedule
+        const endDate = new Date(formValue.endDate).toISOString().split('T')[0];
 
-      this.scheduleApiService.createSchedule(newSchedule as Schedule).subscribe({
-        next: (createdSchedule) => {
+        // Get selected days
+        const selectedDays = this.daysOfWeek
+          .filter((day) => day.selected)
+          .map((day) => day.id);
+
+        if (selectedDays.length === 0) {
+          this.errorMessage = 'Please select at least one day of the week';
           this.isLoading = false;
-          this.scheduleAdded.emit(createdSchedule);
-          this.activeModal.close(createdSchedule);
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.errorMessage = `Failed to create schedule: ${
-            error.message || 'Unknown error'
-          }`;
-        },
-      });
+          return;
+        }
+
+        const recurringRequest: RecurringScheduleRequest = {
+          baseSchedule: {
+            roomId: Number(formValue.roomId),
+            roomNumber: this.selectedRoom?.roomNumber || '',
+            userId: this.userId,
+            userName: this.userName,
+            startTime: startTime,
+            endTime: endTime,
+            purpose: formValue.purpose,
+            status: 'PENDING',
+          },
+          recurrencePattern: {
+            startDate: startDate,
+            endDate: endDate,
+            daysOfWeek: selectedDays,
+          },
+        };
+
+        this.scheduleApiService
+          .createRecurringSchedule(recurringRequest)
+          .subscribe({
+            next: (createdSchedules) => {
+              this.isLoading = false;
+              // Emit only the first schedule for backward compatibility
+              this.scheduleAdded.emit(createdSchedules[0]);
+              this.activeModal.close(createdSchedules);
+            },
+            error: (error) => {
+              this.isLoading = false;
+              this.errorMessage = `Failed to create schedules: ${
+                error.message || 'Unknown error'
+              }`;
+            },
+          });
+      } else {
+        // Original add functionality
+        const newSchedule: Partial<Schedule> = {
+          roomId: Number(formValue.roomId),
+          roomNumber: this.selectedRoom?.roomNumber || '',
+          userId: this.userId,
+          userName: this.userName,
+          date: formattedDate,
+          startTime: startTime,
+          endTime: endTime,
+          purpose: formValue.purpose,
+          status: 'PENDING',
+        };
+
+        this.scheduleApiService
+          .createSchedule(newSchedule as Schedule)
+          .subscribe({
+            next: (createdSchedule) => {
+              this.isLoading = false;
+              this.scheduleAdded.emit(createdSchedule);
+              this.activeModal.close(createdSchedule);
+            },
+            error: (error) => {
+              this.isLoading = false;
+              this.errorMessage = `Failed to create schedule: ${
+                error.message || 'Unknown error'
+              }`;
+            },
+          });
+      }
     }
+  }
+
+  toggleDay(day: any): void {
+    day.selected = !day.selected;
+  }
+
+  areNoDaysSelected(): boolean {
+    return this.daysOfWeek.every((d) => !d.selected);
   }
 
   private formatTime(time: string | { hour: number; minute: number }): string {
