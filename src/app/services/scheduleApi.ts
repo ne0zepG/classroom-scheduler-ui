@@ -16,6 +16,16 @@ export interface Schedule {
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
+// Add a new interface for recurring schedule creation
+export interface RecurringScheduleRequest {
+  baseSchedule: Omit<Schedule, 'id' | 'date'>;
+  recurrencePattern: {
+    startDate: string;
+    endDate: string;
+    daysOfWeek: number[]; // 0 = Sunday, 1 = Monday, etc.
+  };
+}
+
 // Extended interface for UI display purposes
 export interface ScheduleWithBuilding extends Schedule {
   building?: string;
@@ -72,6 +82,15 @@ export class ScheduleApiService {
   deleteSchedule(id: number): Observable<void> {
     return this.http
       .delete<void>(`${this.apiUrl}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // Create a recurring schedule
+  createRecurringSchedule(
+    recurringRequest: RecurringScheduleRequest
+  ): Observable<Schedule[]> {
+    return this.http
+      .post<Schedule[]>(`${this.apiUrl}/recurring`, recurringRequest)
       .pipe(catchError(this.handleError));
   }
 

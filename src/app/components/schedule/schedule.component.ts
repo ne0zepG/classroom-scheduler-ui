@@ -104,11 +104,33 @@ export class ScheduleComponent implements OnInit {
     modalRef.componentInstance.rooms = this.rooms;
 
     // Subscribe to the result when modal is closed
-    modalRef.closed.subscribe((result: Schedule) => {
+    modalRef.closed.subscribe((result: Schedule | Schedule[]) => {
       if (result) {
-        console.log('New schedule added:', result);
-        // Refresh schedules list or add the new schedule to the list
-        this.schedules = [...this.schedules, result];
+        console.log('New schedule(s) added:', result);
+
+        if (Array.isArray(result)) {
+          // Handle array of schedules
+          const schedulesWithBuilding = result.map((schedule) => {
+            const room = this.rooms.find((r) => r.id === schedule.roomId);
+            return {
+              ...schedule,
+              building: room?.building || 'N/A',
+            };
+          });
+
+          this.schedules = [...this.schedules, ...schedulesWithBuilding];
+        } else {
+          // Handle single schedule (backwards compatibility)
+          const room = this.rooms.find((r) => r.id === result.roomId);
+          this.schedules = [
+            ...this.schedules,
+            {
+              ...result,
+              building: room?.building || 'N/A',
+            },
+          ];
+        }
+
         this.applyFilters();
       }
     });
