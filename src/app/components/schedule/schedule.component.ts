@@ -23,6 +23,16 @@ import { DeleteModalComponent } from '../delete-modal/delete-modal.component';
   imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.scss',
+  styles: [
+    `
+      .pagination .page-link {
+        cursor: pointer;
+      }
+      .pagination .page-item.disabled .page-link {
+        cursor: not-allowed;
+      }
+    `,
+  ],
 })
 export class ScheduleComponent implements OnInit {
   schedules: ScheduleWithBuilding[] = [];
@@ -43,6 +53,14 @@ export class ScheduleComponent implements OnInit {
     'startTime',
     'endTime',
   ];
+
+  // Pagination properties
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
+  pageSizeOptions = [10, 20, 30];
+  paginatedSchedules: ScheduleWithBuilding[] = [];
+  Math = Math;
 
   constructor(
     private scheduleApiService: ScheduleApiService,
@@ -78,6 +96,10 @@ export class ScheduleComponent implements OnInit {
 
         // Initialize filteredSchedules with all schedules
         this.filteredSchedules = [...this.schedules];
+
+        // Apply filters to the schedules
+        this.applyFilters();
+
         this.isLoading = false;
       },
       error: (error) => {
@@ -187,7 +209,7 @@ export class ScheduleComponent implements OnInit {
     });
   }
 
-  // Delete schedule method
+  // Delete schedule modal
   deleteSchedule(id: number): void {
     const schedule = this.schedules.find((b) => b.id === id);
     if (!schedule) return;
@@ -232,6 +254,23 @@ export class ScheduleComponent implements OnInit {
           },
         });
       }
+    });
+
+    // When successful delete happens:
+    this.scheduleApiService.deleteSchedule(id).subscribe({
+      next: () => {
+        // Update the main schedules array
+        this.schedules = this.schedules.filter(
+          (schedule) => schedule.id !== id
+        );
+
+        // Apply filters again to update pagination
+        this.applyFilters();
+      },
+      error: (error: any) => {
+        console.error('Error deleting schedule:', error);
+        this.errorMessage = 'Failed to delete schedule. Please try again.';
+      },
     });
   }
 
@@ -287,7 +326,10 @@ export class ScheduleComponent implements OnInit {
     return formatTimeTo12Hour(time);
   }
 
-  // Sort and search methods
+  /**
+   * Sort the schedules based on the selected column and direction
+   * @param column
+   */
   sort(column: string): void {
     if (this.sortColumn.column === column) {
       // Toggle direction if same column is clicked
@@ -300,6 +342,11 @@ export class ScheduleComponent implements OnInit {
     this.applyFilters();
   }
 
+  /**
+   * Get the icon class for the sort indicator
+   * @param column
+   * @returns
+   */
   getSortIcon(column: string): string {
     if (this.sortColumn.column !== column) {
       return 'bi-arrow-down-up';
@@ -309,12 +356,19 @@ export class ScheduleComponent implements OnInit {
       : 'bi-arrow-up';
   }
 
+  /**
+   * Handle search input change
+   * @param event
+   */
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchTerm = input.value;
     this.applyFilters();
   }
 
+  /**
+   * Clear the search input and reset filters
+   */
   clearSearch(): void {
     this.searchTerm = '';
     this.applyFilters();
@@ -327,6 +381,8 @@ export class ScheduleComponent implements OnInit {
     // Safety check to ensure schedules exists
     if (!this.schedules || !this.schedules.length) {
       this.filteredSchedules = [];
+      this.paginatedSchedules = [];
+      this.totalPages = 1;
       return;
     }
 
@@ -343,5 +399,88 @@ export class ScheduleComponent implements OnInit {
     }
 
     this.filteredSchedules = result;
+
+    // Calculate total pages
+    this.totalPages = Math.ceil(
+      this.filteredSchedules.length / this.itemsPerPage
+    );
+
+    // Ensure current page is valid
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages || 1;
+    }
+
+    // Apply pagination
+    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+    const endIndex = Math.min(
+      startIndex + this.itemsPerPage,
+      this.filteredSchedules.length
+    );
+    this.paginatedSchedules = this.filteredSchedules.slice(
+      startIndex,
+      endIndex
+    );
+  }
+
+  /**
+   * Change the current page and reapply filters
+   * @param page
+   */
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.applyFilters();
+    }
+  }
+
+  /**
+   * Change the number of items per page and reset to first page
+   * @param event
+   */
+  changePageSize(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.itemsPerPage = Number(select.value);
+    this.currentPage = 1; // Reset to first page when changing page size
+    this.applyFilters();
+  }
+
+  /**
+   * Get the array of page numbers for pagination
+   * @returns
+   */
+  getPageArray(): number[] {
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    if (this.totalPages <= maxPagesToShow) {
+      // Show all pages if there are 5 or fewer
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Show limited pages with current page in middle when possible
+      if (this.currentPage <= 3) {
+        // Current page is close to the beginning
+        for (let i = 1; i <= Math.min(maxPagesToShow, this.totalPages); i++) {
+          pages.push(i);
+        }
+      } else if (this.currentPage >= this.totalPages - 2) {
+        // Current page is close to the end
+        for (
+          let i = this.totalPages - maxPagesToShow + 1;
+          i <= this.totalPages;
+          i++
+        ) {
+          pages.push(i);
+        }
+      } else {
+        // Current page is in middle, show pages around it
+        for (let i = this.currentPage - 2; i <= this.currentPage + 2; i++) {
+          pages.push(i);
+        }
+      }
+    }
+
+    return pages;
   }
 }
