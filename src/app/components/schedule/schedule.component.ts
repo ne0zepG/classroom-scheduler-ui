@@ -15,7 +15,7 @@ import { searchData } from '../../utils/searchTable';
 import { SortColumn, sortData } from '../../utils/sortTable';
 import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
-import { DeleteModalComponent } from '../delete-modal/delete-modal.component';
+import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
 
 @Component({
   selector: 'app-schedule',

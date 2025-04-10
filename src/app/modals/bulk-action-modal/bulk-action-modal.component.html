@@ -1,0 +1,44 @@
+<div class="modal-header">
+  <h4 class="modal-title">Confirm Bulk Action</h4>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="activeModal.dismiss('Cross click')"
+  ></button>
+</div>
+<div class="modal-body">
+  <div class="text-center mb-4">
+    <i [ngClass]="getIconClass()" style="font-size: 3rem"> </i>
+  </div>
+
+  <p>
+    Are you sure you want to mark <strong>{{ count }}</strong>
+    {{ count === 1 ? "schedule" : "schedules" }} as
+    <strong>{{ actionType }}</strong
+    >?
+  </p>
+
+  <p *ngIf="actionType === 'APPROVED'" class="text-muted">
+    This will approve all selected schedules and confirm the room reservations.
+  </p>
+  <p *ngIf="actionType === 'REJECTED'" class="text-muted">
+    This will reject all selected schedules and make the rooms available for
+    other reservations.
+  </p>
+  <p *ngIf="actionType === 'PENDING'" class="text-muted">
+    This will mark all selected schedules as pending.
+  </p>
+</div>
+<div class="modal-footer">
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="activeModal.dismiss('Cancel click')"
+  >
+    Cancel
+  </button>
+  <button type="button" [ngClass]="getButtonClass()" (click)="confirmAction()">
+    Confirm
+  </button>
+</div>

@@ -19,7 +19,7 @@ export const routes: Routes = [
   {
     path: 'manage',
     component: ScheduleComponent,
-    title: 'Manage Classroom Schedules',
+    title: 'Manage Schedules',
   },
   { path: 'admin', component: AdminControlComponent, title: 'Admin Control' },
   {
