@@ -1,0 +1,145 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Classrooms Schedules</h2>
+    <button class="btn btn-primary" (click)="openAddScheduleModal()">
+      <i class="bi bi-plus-circle me-2"></i>Add New Schedule
+    </button>
+  </div>
+
+  <!-- Alert for errors -->
+  <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Search box -->
+  <div *ngIf="!isLoading && schedules.length > 0" class="mb-3">
+    <div class="input-group">
+      <span class="input-group-text bg-light">
+        <i class="bi bi-search"></i>
+      </span>
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Search"
+        [(ngModel)]="searchTerm"
+        (input)="onSearch($event)"
+      />
+      <button
+        *ngIf="searchTerm"
+        class="btn btn-outline-secondary"
+        type="button"
+        (click)="clearSearch()"
+      >
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <small
+      class="text-muted mt-1"
+      *ngIf="searchTerm && filteredSchedules.length !== schedules.length"
+    >
+      Showing {{ filteredSchedules.length }} of {{ schedules.length }} schedules
+    </small>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="d-flex justify-content-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Schedules table -->
+  <div
+    *ngIf="!isLoading && filteredSchedules.length > 0"
+    class="table-responsive"
+  >
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th style="cursor: pointer" (click)="sort('roomNumber')">
+            Room Number
+            <i class="bi {{ getSortIcon('roomNumber') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('roomId')">
+            Building
+            <i class="bi {{ getSortIcon('roomId') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('purpose')">
+            Course
+            <i class="bi {{ getSortIcon('purpose') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('date')">
+            Date
+            <i class="bi {{ getSortIcon('date') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('startTime')">
+            Time
+            <i class="bi {{ getSortIcon('startTime') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('status')">
+            Status
+            <i class="bi {{ getSortIcon('status') }} ms-1"></i>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let schedule of filteredSchedules">
+          <td>{{ schedule.roomNumber }}</td>
+          <td>{{ getBuildingByRoomId(schedule.roomId) }}</td>
+          <td>{{ schedule.purpose }}</td>
+          <td>{{ formatDate(schedule.date) }}</td>
+          <td>
+            {{ formatTime(schedule.startTime) }} -
+            {{ formatTime(schedule.endTime) }}
+          </td>
+          <td>
+            <span
+              class="badge rounded-pill {{
+                getStatusBadgeClass(schedule.status)
+              }}"
+            >
+              {{ schedule.status }}
+            </span>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <button
+                class="btn btn-outline-primary"
+                (click)="openEditScheduleModal(schedule)"
+              >
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button
+                class="btn btn-outline-danger"
+                (click)="deleteSchedule(schedule.id)"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- No results from search -->
+  <div
+    *ngIf="!isLoading && schedules.length > 0 && filteredSchedules.length === 0"
+    class="text-center my-5"
+  >
+    <i class="bi bi-search display-1 text-muted"></i>
+    <p class="lead mt-3">No results found</p>
+    <p class="text-muted">Try adjusting your search terms</p>
+    <button class="btn btn-outline-primary mt-2" (click)="clearSearch()">
+      Clear Search
+    </button>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && schedules.length === 0" class="text-center my-5">
+    <i class="bi bi-calendar-x display-1 text-muted"></i>
+    <p class="lead mt-3">No schedules found</p>
+    <p class="text-muted">Create a new schedule to get started</p>
+  </div>
+</div>

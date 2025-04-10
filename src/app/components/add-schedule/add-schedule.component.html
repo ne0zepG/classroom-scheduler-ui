@@ -1,0 +1,212 @@
+<div class="modal-header">
+  <h4 class="modal-title">
+    {{ isEditMode ? "Edit Schedule" : "Add New Schedule" }}
+  </h4>
+  <button
+    type="button"
+    class="btn-close"
+    aria-label="Close"
+    (click)="activeModal.dismiss('Cross click')"
+  ></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
+    <!-- Room selection -->
+    <div class="mb-3">
+      <label for="roomId" class="form-label">Select Room</label>
+      <select
+        class="form-select"
+        id="roomId"
+        formControlName="roomId"
+        (change)="onRoomChange($event)"
+      >
+        <option value="" disabled selected>-- Select a room --</option>
+        <optgroup
+          *ngFor="let building of rooms | roomsByBuilding"
+          [label]="building"
+        >
+          <option
+            *ngFor="let room of rooms | filterByBuilding : building"
+            [value]="room.id"
+          >
+            {{ room.roomNumber }} (Capacity: {{ room.capacity }})
+          </option>
+        </optgroup>
+      </select>
+      <div
+        *ngIf="
+          scheduleForm.get('roomId')?.invalid &&
+          (scheduleForm.get('roomId')?.dirty ||
+            scheduleForm.get('roomId')?.touched)
+        "
+        class="text-danger small"
+      >
+        Please select a room
+      </div>
+    </div>
+
+    <!-- Building information (read-only) -->
+    <div class="mb-3">
+      <label for="building" class="form-label">Building</label>
+      <input
+        type="text"
+        class="form-control"
+        id="building"
+        [value]="selectedRoom?.building || ''"
+        readonly
+      />
+    </div>
+
+    <!-- Room features display -->
+    <div class="mb-3 room-features" *ngIf="selectedRoom">
+      <div class="d-flex align-items-center small">
+        <span class="me-3">
+          <i
+            class="bi"
+            [ngClass]="
+              selectedRoom.hasProjector
+                ? 'bi-check-circle-fill text-success'
+                : 'bi-x-circle-fill text-muted'
+            "
+          ></i>
+          Projector
+        </span>
+        <span>
+          <i
+            class="bi"
+            [ngClass]="
+              selectedRoom.hasComputers
+                ? 'bi-check-circle-fill text-success'
+                : 'bi-x-circle-fill text-muted'
+            "
+          ></i>
+          Computers
+        </span>
+      </div>
+    </div>
+
+    <!-- Date, Start Time, End Time in a single row -->
+    <div class="row g-3">
+      <!-- Date picker -->
+      <div class="col-md-4 mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input
+          type="date"
+          class="form-control"
+          id="date"
+          formControlName="date"
+          [min]="today"
+        />
+        <div
+          *ngIf="
+            scheduleForm.get('date')?.invalid &&
+            (scheduleForm.get('date')?.dirty || scheduleForm.get('date')?.touched)
+          "
+          class="text-danger small"
+        >
+          Please select a valid date
+        </div>
+      </div>
+
+      <!-- Start time -->
+      <div class="col-md-4 mb-3">
+        <label for="startTime" class="form-label">Start Time</label>
+        <input
+          type="time"
+          class="form-control"
+          id="startTime"
+          formControlName="startTime"
+        />
+        <div
+          *ngIf="
+            scheduleForm.get('startTime')?.invalid &&
+            (scheduleForm.get('startTime')?.dirty ||
+              scheduleForm.get('startTime')?.touched)
+          "
+          class="text-danger small"
+        >
+          Please select a start time
+        </div>
+      </div>
+
+      <!-- End time -->
+      <div class="col-md-4 mb-3">
+        <label for="endTime" class="form-label">End Time</label>
+        <input
+          type="time"
+          class="form-control"
+          id="endTime"
+          formControlName="endTime"
+        />
+        <div
+          *ngIf="
+            scheduleForm.get('endTime')?.invalid &&
+            (scheduleForm.get('endTime')?.dirty ||
+              scheduleForm.get('endTime')?.touched)
+          "
+          class="text-danger small"
+        >
+          Please select an end time
+        </div>
+      </div>
+    </div>
+
+    <!-- Purpose -->
+    <div class="mb-3">
+      <label for="purpose" class="form-label">Purpose / Course</label>
+      <textarea
+        class="form-control"
+        id="purpose"
+        formControlName="purpose"
+        rows="3"
+        placeholder="Enter the purpose or course name for this schedule"
+      ></textarea>
+      <div
+        *ngIf="
+          scheduleForm.get('purpose')?.invalid &&
+          (scheduleForm.get('purpose')?.dirty ||
+            scheduleForm.get('purpose')?.touched)
+        "
+        class="text-danger small"
+      >
+        <div *ngIf="scheduleForm.get('purpose')?.errors?.['required']">
+          Purpose is required
+        </div>
+        <div *ngIf="scheduleForm.get('purpose')?.errors?.['minlength']">
+          Purpose must be at least 5 characters
+        </div>
+        <div *ngIf="scheduleForm.get('purpose')?.errors?.['maxlength']">
+          Purpose cannot exceed 200 characters
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Display error message if any -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="activeModal.dismiss('Cancel click')"
+  >
+    Cancel
+  </button>
+  <button
+    type="button"
+    class="btn btn-primary"
+    [disabled]="scheduleForm.invalid || isLoading"
+    (click)="onSubmit()"
+  >
+    <span
+      *ngIf="isLoading"
+      class="spinner-border spinner-border-sm me-1"
+    ></span>
+    {{ isEditMode ? "Update" : "Submit" }}
+  </button>
+</div>

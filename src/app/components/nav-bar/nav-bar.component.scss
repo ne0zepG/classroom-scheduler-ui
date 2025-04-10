@@ -1,0 +1,9 @@
+.navbar-brand {
+  font-size: 1.5rem;
+}
+
+// Make sure active links are highlighted
+.nav-link.active {
+  font-weight: 500;
+  color: #0d6efd !important;
+}

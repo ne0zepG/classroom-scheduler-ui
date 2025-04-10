@@ -1,0 +1,179 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Classroom Occupancy Statistics</h2>
+
+  <!-- Filters -->
+  <div class="row mb-4 align-items-end">
+    <div class="col-md-4">
+      <label for="buildingSelect" class="form-label">Building</label>
+      <select
+        id="buildingSelect"
+        class="form-select"
+        [(ngModel)]="selectedBuilding"
+        (change)="onBuildingChange()"
+      >
+        <option value="" disabled selected>Select Building</option>
+        <option *ngFor="let building of buildings" [value]="building">
+          {{ building }}
+        </option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label for="roomSelect" class="form-label">Room</label>
+      <select
+        id="roomSelect"
+        class="form-select"
+        [(ngModel)]="selectedRoom"
+        (change)="onRoomChange()"
+        [disabled]="!selectedBuilding"
+      >
+        <option [ngValue]="null" disabled selected>Select Room</option>
+        <option *ngFor="let room of filteredRooms" [ngValue]="room.id">
+          {{ room.roomNumber }}
+        </option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label for="dateSelect" class="form-label">Date</label>
+      <input
+        type="date"
+        id="dateSelect"
+        class="form-control"
+        [(ngModel)]="selectedDate"
+        (change)="onDateChange()"
+        [disabled]="!selectedRoom"
+      />
+    </div>
+  </div>
+
+  <!-- Loading and Error Messages -->
+  <div *ngIf="isLoading" class="text-center my-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading data...</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <!-- No Selection Message -->
+  <div *ngIf="!isLoading && !selectedRoom" class="alert alert-info">
+    Please select a building and room to view occupancy statistics.
+  </div>
+
+  <!-- View Switcher -->
+  <div *ngIf="!isLoading && selectedRoom" class="mb-3">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          [class.active]="currentView === 'morning'"
+          (click)="switchView('morning')"
+        >
+          Morning (7:00 AM - 12:00 PM)
+        </button>
+      </li>
+      <li class="nav-item">
+        <button
+          class="nav-link"
+          [class.active]="currentView === 'afternoon'"
+          (click)="switchView('afternoon')"
+        >
+          Afternoon (12:30 PM - 9:00 PM)
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Morning Schedule -->
+  <div
+    *ngIf="!isLoading && selectedRoom && currentView === 'morning'"
+    class="table-responsive"
+  >
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Classroom Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let slot of morningSlots"
+          [class.table-secondary]="slot.isBooked"
+        >
+          <td>{{ slot.time }}</td>
+          <td>
+            <span *ngIf="slot.isBooked" class="badge bg-danger">Occupied</span>
+            <span *ngIf="!slot.isBooked" class="badge bg-success"
+              >Available</span
+            >
+          </td>
+          <td>
+            <div *ngIf="slot.schedule">
+              <strong>Course / Purpose:</strong> {{ slot.schedule.purpose
+              }}<br />
+              <strong>Instructor:</strong> {{ slot.schedule.bookedBy }}<br />
+              <strong>Status:</strong>
+              <span
+                class="badge mx-1"
+                [class]="getStatusBadgeClass(slot.schedule.status)"
+              >
+                {{ slot.schedule.status }}
+              </span>
+            </div>
+            <em *ngIf="!slot.schedule">Not booked</em>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Afternoon Schedule -->
+  <div
+    *ngIf="!isLoading && selectedRoom && currentView === 'afternoon'"
+    class="table-responsive"
+  >
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Schedule Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let slot of afternoonSlots"
+          [class.table-secondary]="slot.isBooked"
+        >
+          <td>{{ slot.time }}</td>
+          <td>
+            <span *ngIf="slot.isBooked" class="badge bg-danger">Occupied</span>
+            <span *ngIf="!slot.isBooked" class="badge bg-success"
+              >Available</span
+            >
+          </td>
+          <td>
+            <div *ngIf="slot.schedule">
+              <strong>Purpose:</strong> {{ slot.schedule.purpose }}<br />
+
+              <strong>Status:</strong>
+              <span
+                class="badge mx-1"
+                [class]="getStatusBadgeClass(slot.schedule.status)"
+              >
+                {{ slot.schedule.status }}
+              </span>
+            </div>
+            <em *ngIf="!slot.schedule">No schedule</em>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

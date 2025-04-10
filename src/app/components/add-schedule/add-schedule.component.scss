@@ -1,0 +1,41 @@
+.room-features {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+
+  i {
+    margin-right: 5px;
+  }
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.text-danger {
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+// Style for date and time inputs
+input[type="date"],
+input[type="time"] {
+  padding: 0.375rem 0.75rem;
+}
+
+.shorter-input {
+  width: 100%;
+  max-width: 200px; // Adjust this value to your preference
+}
+
+@media (max-width: 576px) {
+  .input-size-wrapper {
+    max-width: 100%;
+  }
+}
