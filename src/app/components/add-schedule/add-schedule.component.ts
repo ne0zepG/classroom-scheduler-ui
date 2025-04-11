@@ -42,6 +42,8 @@ export class AddScheduleComponent implements OnInit {
   @Input() existingSchedule: Schedule | null = null;
   @Output() scheduleUpdated = new EventEmitter<Schedule>();
 
+  @Input() isRequest = false;
+
   scheduleForm: FormGroup;
   selectedRoom: Room | null = null;
   courses: Course[] = [];
