@@ -1,20 +1,20 @@
+import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { formatTimeTo12Hour } from '../../utils/timeFormatter';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { forkJoin } from 'rxjs';
+import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
+import { Room, RoomApiService } from '../../services/roomApi';
 import {
   Schedule,
   ScheduleApiService,
   ScheduleWithBuilding,
 } from '../../services/scheduleApi';
-import { Room, RoomApiService } from '../../services/roomApi';
-import { catchError, forkJoin, of, switchMap } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
-import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
-import { NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { SortColumn, sortData } from '../../utils/sortTable';
 import { searchData } from '../../utils/searchTable';
-import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
+import { SortColumn, sortData } from '../../utils/sortTable';
+import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 
 @Component({
   selector: 'app-request',
@@ -26,10 +26,10 @@ import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-ac
     FormsModule,
     NgbDropdownModule,
   ],
-  templateUrl: './request.component.html',
-  styleUrl: './request.component.scss',
+  templateUrl: './manage-request.component.html',
+  styleUrl: './manage-request.component.scss',
 })
-export class RequestComponent implements OnInit {
+export class ManageRequestComponent implements OnInit {
   schedules: ScheduleWithBuilding[] = [];
   rooms: Room[] = [];
   isLoading = true;

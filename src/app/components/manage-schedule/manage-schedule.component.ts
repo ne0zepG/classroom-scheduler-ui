@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin } from 'rxjs';
+import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
+import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
 import { Room, RoomApiService } from '../../services/roomApi';
 import {
   Schedule,
@@ -15,17 +17,15 @@ import { searchData } from '../../utils/searchTable';
 import { SortColumn, sortData } from '../../utils/sortTable';
 import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
-import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
-import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
 
 @Component({
   selector: 'app-schedule',
   standalone: true,
   imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
-  templateUrl: './schedule.component.html',
-  styleUrl: './schedule.component.scss',
+  templateUrl: './manage-schedule.component.html',
+  styleUrl: './manage-schedule.component.scss',
 })
-export class ScheduleComponent implements OnInit {
+export class ManageScheduleComponent implements OnInit {
   schedules: ScheduleWithBuilding[] = [];
   filteredSchedules: ScheduleWithBuilding[] = [];
   rooms: Room[] = [];

@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { HomePageComponent } from './components/home-page/home-page.component';
-import { ScheduleComponent } from './components/schedule/schedule.component';
-import { StatisticsComponent } from './components/statistics/statistics.component';
 import { AdminControlComponent } from './components/admin-control/admin-control.component';
-import { RequestComponent } from './components/request/request.component';
+import { HomePageComponent } from './components/home-page/home-page.component';
+import { ManageRequestComponent } from './components/manage-request/manage-request.component';
+import { ManageScheduleComponent } from './components/manage-schedule/manage-schedule.component';
+import { StatisticsComponent } from './components/statistics/statistics.component';
 
 export const routes: Routes = [
   {
@@ -17,14 +17,14 @@ export const routes: Routes = [
     title: 'Classroom Statistics',
   },
   {
-    path: 'manage',
-    component: ScheduleComponent,
+    path: 'manage-schedules',
+    component: ManageScheduleComponent,
     title: 'Manage Schedules',
   },
   { path: 'admin', component: AdminControlComponent, title: 'Admin Control' },
   {
-    path: 'requests',
-    component: RequestComponent,
+    path: 'manage-requests',
+    component: ManageRequestComponent,
     title: 'Manage Requests',
   },
   { path: '**', redirectTo: 'home' }, // Redirect any unknown paths to the home page
