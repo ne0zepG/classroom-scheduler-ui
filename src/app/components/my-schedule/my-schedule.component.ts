@@ -40,7 +40,8 @@ export class MyScheduleComponent {
   searchColumns = [
     'roomNumber',
     'building',
-    'purpose',
+    'courseCode',
+    'courseDescription',
     'date',
     'status',
     'startTime',

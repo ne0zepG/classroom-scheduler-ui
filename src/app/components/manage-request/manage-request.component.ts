@@ -46,7 +46,8 @@ export class ManageRequestComponent implements OnInit {
   searchColumns = [
     'roomNumber',
     'building',
-    'purpose',
+    'courseCode',
+    'courseDescription',
     'userName',
     'date',
     'status',

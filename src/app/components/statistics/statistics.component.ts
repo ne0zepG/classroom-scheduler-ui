@@ -9,10 +9,12 @@ import { Router } from '@angular/router';
 interface ScheduleDisplay {
   id: number;
   roomId: number;
-  purpose: string;
   scheduledBy: string;
   startTime: Date;
   endTime: Date;
+  courseId: number;
+  courseCode: string;
+  courseDescription: string;
   status: string;
 }
 
@@ -117,7 +119,9 @@ export class StatisticsComponent implements OnInit {
           .map((schedule) => ({
             id: schedule.id,
             roomId: schedule.roomId,
-            purpose: schedule.purpose,
+            courseId: schedule.courseId,
+            courseCode: schedule.courseCode,
+            courseDescription: schedule.courseDescription,
             scheduledBy: schedule.userName,
             startTime: new Date(schedule.date + 'T' + schedule.startTime),
             endTime: new Date(schedule.date + 'T' + schedule.endTime),
@@ -166,7 +170,10 @@ export class StatisticsComponent implements OnInit {
       const startTime = schedule.startTime;
       const endTime = schedule.endTime;
 
-      console.log(`Processing schedule: ${schedule.purpose}`);
+      console.log(
+        `Processing schedule: ${schedule.courseCode} - ${schedule.courseDescription}`
+      );
+
       console.log(
         `Start time: ${startTime.toLocaleTimeString()}, End time: ${endTime.toLocaleTimeString()}`
       );
@@ -186,7 +193,7 @@ export class StatisticsComponent implements OnInit {
             `Slot: ${slot.time}, Time: ${slotTime.toLocaleTimeString()}`
           );
           console.log(
-            `Is within schedule ${schedule.purpose}? ${isWithinSchedule}`
+            `Is within schedule ${schedule.courseCode}? ${isWithinSchedule}`
           );
         }
 
@@ -194,7 +201,7 @@ export class StatisticsComponent implements OnInit {
           slot.isScheduled = true;
           slot.schedule = schedule;
           console.log(
-            `Marked slot ${slot.time} as scheduled for ${schedule.purpose}`
+            `Marked slot ${slot.time} as scheduled for ${schedule.courseCode} - ${schedule.courseDescription}`
           );
         }
       });

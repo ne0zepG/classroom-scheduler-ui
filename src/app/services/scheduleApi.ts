@@ -12,7 +12,9 @@ export interface Schedule {
   date: string;
   startTime: string;
   endTime: string;
-  purpose: string;
+  courseId: number;
+  courseCode: string;
+  courseDescription: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
