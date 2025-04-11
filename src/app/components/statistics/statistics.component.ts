@@ -61,7 +61,7 @@ export class StatisticsComponent implements OnInit {
         // Extract unique buildings
         this.rooms = rooms;
         this.buildings = [
-          ...new Set(rooms.map((room) => room.building)),
+          ...new Set(rooms.map((room) => room.buildingName)),
         ].sort();
         this.isLoading = false;
       },
@@ -75,7 +75,7 @@ export class StatisticsComponent implements OnInit {
 
   onBuildingChange(): void {
     this.filteredRooms = this.rooms.filter(
-      (room) => room.building === this.selectedBuilding
+      (room) => room.buildingName === this.selectedBuilding
     );
     this.selectedRoom = null; // Reset room selection
     this.resetSchedules();
