@@ -3,19 +3,18 @@ import { HttpClientModule } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { forkJoin } from 'rxjs';
+import { Room, RoomApiService } from '../../services/roomApi';
 import {
   Schedule,
   ScheduleApiService,
   ScheduleWithBuilding,
 } from '../../services/scheduleApi';
-import { Room, RoomApiService } from '../../services/roomApi';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { SortColumn, sortData } from '../../utils/sortTable';
 import { searchData } from '../../utils/searchTable';
+import { SortColumn, sortData } from '../../utils/sortTable';
 import { formatTimeTo12Hour } from '../../utils/timeFormatter';
-import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
 import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
-import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-my-schedule',
@@ -119,6 +118,7 @@ export class MyScheduleComponent {
     modalRef.componentInstance.rooms = this.rooms;
     modalRef.componentInstance.userId = 1; // This should be dynamic based on auth
     modalRef.componentInstance.userName = this.currentUserEmail;
+    modalRef.componentInstance.isRequest = true;
 
     // Subscribe to the result when modal is closed
     modalRef.closed.subscribe((result: Schedule | Schedule[]) => {

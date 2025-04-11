@@ -1,6 +1,12 @@
 <div class="modal-header">
   <h4 class="modal-title">
-    {{ isEditMode ? "Edit Schedule" : "Add New Schedule" }}
+    {{
+      isEditMode
+        ? "Edit Schedule"
+        : isRequest
+        ? "Request New Schedule"
+        : "Add New Schedule"
+    }}
   </h4>
   <button
     type="button"
