@@ -101,8 +101,8 @@ export class AddScheduleComponent implements OnInit {
   ngOnInit(): void {
     // Sort rooms for dropdown
     this.rooms.sort((a, b) => {
-      if (a.building !== b.building) {
-        return a.building.localeCompare(b.building);
+      if (a.buildingName !== b.buildingName) {
+        return a.buildingName.localeCompare(b.buildingName);
       }
       return a.roomNumber.localeCompare(b.roomNumber);
     });

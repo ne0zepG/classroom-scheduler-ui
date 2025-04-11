@@ -19,7 +19,7 @@ import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
 
 @Component({
-  selector: 'app-schedule',
+  selector: 'app-manage-schedule',
   standalone: true,
   imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
   templateUrl: './manage-schedule.component.html',
@@ -86,7 +86,7 @@ export class ManageScheduleComponent implements OnInit {
           const room = this.rooms.find((r) => r.id === schedules.roomId);
           return {
             ...schedules,
-            building: room?.building || 'N/A',
+            building: room?.buildingName || 'N/A',
           };
         });
 
@@ -132,7 +132,7 @@ export class ManageScheduleComponent implements OnInit {
             const room = this.rooms.find((r) => r.id === schedule.roomId);
             return {
               ...schedule,
-              building: room?.building || 'N/A',
+              building: room?.buildingName || 'N/A',
             };
           });
 
@@ -144,7 +144,7 @@ export class ManageScheduleComponent implements OnInit {
             ...this.schedules,
             {
               ...result,
-              building: room?.building || 'N/A',
+              building: room?.buildingName || 'N/A',
             },
           ];
         }
@@ -197,7 +197,7 @@ export class ManageScheduleComponent implements OnInit {
           const room = this.rooms.find((r) => r.id === updatedSchedule.roomId);
           this.schedules[index] = {
             ...updatedSchedule,
-            building: room?.building || 'N/A',
+            building: room?.buildingName || 'N/A',
           };
           this.applyFilters();
         }
@@ -273,7 +273,7 @@ export class ManageScheduleComponent implements OnInit {
   getBuildingByRoomId(roomId: number): string {
     if (!roomId || !this.rooms) return 'N/A';
     const room = this.rooms.find((room) => room.id === roomId);
-    return room ? room.building : 'N/A';
+    return room ? room.buildingName : 'N/A';
   }
 
   /**
