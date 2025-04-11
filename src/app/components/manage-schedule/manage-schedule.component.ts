@@ -38,7 +38,8 @@ export class ManageScheduleComponent implements OnInit {
   searchColumns = [
     'roomNumber',
     'building',
-    'purpose',
+    'courseCode',
+    'courseDescription',
     'date',
     'status',
     'startTime',
@@ -168,7 +169,9 @@ export class ManageScheduleComponent implements OnInit {
       date: schedule.date,
       startTime: schedule.startTime,
       endTime: schedule.endTime,
-      purpose: schedule.purpose,
+      courseId: schedule.courseId,
+      courseCode: schedule.courseCode,
+      courseDescription: schedule.courseDescription,
       status: schedule.status,
     };
 
@@ -217,7 +220,7 @@ export class ManageScheduleComponent implements OnInit {
 
     // Pass data to the delete modal
     modalRef.componentInstance.itemId = id;
-    modalRef.componentInstance.itemName = schedule.purpose;
+    modalRef.componentInstance.itemName = `${schedule.courseCode} - ${schedule.courseDescription}`;
     modalRef.componentInstance.roomNumber = schedule.roomNumber;
     modalRef.componentInstance.building = this.getBuildingByRoomId(
       schedule.roomId

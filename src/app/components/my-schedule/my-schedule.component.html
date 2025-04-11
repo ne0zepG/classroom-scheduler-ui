@@ -86,9 +86,13 @@
             Building
             <i class="bi {{ getSortIcon('roomId') }} ms-1"></i>
           </th>
-          <th style="cursor: pointer" (click)="sort('purpose')">
-            Course/Purpose
-            <i class="bi {{ getSortIcon('purpose') }} ms-1"></i>
+          <th style="cursor: pointer" (click)="sort('courseCode')">
+            Code
+            <i class="bi {{ getSortIcon('courseCode') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('courseDescription')">
+            Description
+            <i class="bi {{ getSortIcon('courseDescription') }} ms-1"></i>
           </th>
           <th style="cursor: pointer" (click)="sort('date')">
             Date
@@ -108,7 +112,8 @@
         <tr *ngFor="let schedule of paginatedSchedules">
           <td>{{ schedule.roomNumber }}</td>
           <td>{{ getBuildingByRoomId(schedule.roomId) }}</td>
-          <td>{{ schedule.purpose }}</td>
+          <td>{{ schedule.courseCode }}</td>
+          <td>{{ schedule.courseDescription }}</td>
           <td>{{ formatDate(schedule.date) }}</td>
           <td>
             {{ formatTime(schedule.startTime) }} -

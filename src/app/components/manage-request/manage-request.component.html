@@ -131,16 +131,20 @@
             </div>
           </th>
           <th style="cursor: pointer" (click)="sort('roomNumber')">
-            Room Number
+            Room No.
             <i class="bi {{ getSortIcon('roomNumber') }} ms-1"></i>
           </th>
           <th style="cursor: pointer" (click)="sort('building')">
             Building
             <i class="bi {{ getSortIcon('building') }} ms-1"></i>
           </th>
-          <th style="cursor: pointer" (click)="sort('purpose')">
-            Course/Purpose
-            <i class="bi {{ getSortIcon('purpose') }} ms-1"></i>
+          <th style="cursor: pointer" (click)="sort('courseCode')">
+            Code
+            <i class="bi {{ getSortIcon('courseCode') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('courseDescription')">
+            Description
+            <i class="bi {{ getSortIcon('courseDescription') }} ms-1"></i>
           </th>
           <th style="cursor: pointer" (click)="sort('userName')">
             Requester
@@ -155,7 +159,7 @@
             <i class="bi {{ getSortIcon('startTime') }} ms-1"></i>
           </th>
           <th style="cursor: pointer" (click)="sort('status')">
-            Current Status
+            Status
             <i class="bi {{ getSortIcon('status') }} ms-1"></i>
           </th>
           <th>Actions</th>
@@ -180,7 +184,8 @@
           </td>
           <td>{{ schedule.roomNumber }}</td>
           <td>{{ schedule.building }}</td>
-          <td>{{ schedule.purpose }}</td>
+          <td>{{ schedule.courseCode }}</td>
+          <td>{{ schedule.courseDescription }}</td>
           <td>{{ schedule.userName }}</td>
           <td>{{ formatDate(schedule.date) }}</td>
           <td>
