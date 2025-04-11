@@ -94,7 +94,7 @@ export class ScheduleApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // Update schedule status in batch`
+  // Update schedule status in batch
   updateScheduleStatusBatch(
     ids: number[],
     status: 'PENDING' | 'APPROVED' | 'REJECTED'
@@ -105,6 +105,11 @@ export class ScheduleApiService {
         status: status,
       })
       .pipe(catchError(this.handleError));
+  }
+
+  // Delete schedules in batch
+  deleteSchedulesBatch(ids: number[]): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/batch`, { body: ids });
   }
 
   // Error handling

@@ -29,6 +29,10 @@
   <p *ngIf="actionType === 'PENDING'" class="text-muted">
     This will mark all selected schedules as pending.
   </p>
+  <p *ngIf="actionType === 'DELETE'" class="text-muted">
+    This will permanently delete all selected schedules. This action cannot be
+    undone.
+  </p>
 </div>
 <div class="modal-footer">
   <button

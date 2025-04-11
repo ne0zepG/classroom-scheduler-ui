@@ -53,6 +53,27 @@
     </div>
   </div>
 
+  <!-- Bulk actions for selected schedules -->
+  <div
+    *ngIf="!isLoading && selectedCount > 0"
+    class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded"
+  >
+    <div>
+      <span class="fw-bold me-2">{{ selectedCount }} items selected</span>
+      <button
+        class="btn btn-sm btn-link text-decoration-none"
+        (click)="clearSelections()"
+      >
+        Clear selection
+      </button>
+    </div>
+    <div class="btn-group" role="group">
+      <button class="btn btn-danger btn-sm" (click)="openBulkDeleteModal()">
+        <i class="bi bi-trash me-1"></i> Delete Selected
+      </button>
+    </div>
+  </div>
+
   <!-- Items per page selector -->
   <div
     *ngIf="!isLoading && filteredSchedules.length > 0"
@@ -78,6 +99,20 @@
     <table class="table table-striped table-hover">
       <thead>
         <tr>
+          <th style="width: 40px">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="selectAll"
+                [checked]="selectAll"
+                (change)="toggleSelectAll()"
+              />
+              <label class="form-check-label" for="selectAll">
+                <span class="visually-hidden">Select All</span>
+              </label>
+            </div>
+          </th>
           <th style="cursor: pointer" (click)="sort('roomNumber')">
             Room Number
             <i class="bi {{ getSortIcon('roomNumber') }} ms-1"></i>
@@ -107,6 +142,20 @@
       </thead>
       <tbody>
         <tr *ngFor="let schedule of paginatedSchedules">
+          <td>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="'select-' + schedule.id"
+                [checked]="selectedSchedules[schedule.id]"
+                (change)="toggleSelection(schedule.id)"
+              />
+              <label class="form-check-label" [for]="'select-' + schedule.id">
+                <span class="visually-hidden">Select</span>
+              </label>
+            </div>
+          </td>
           <td>{{ schedule.roomNumber }}</td>
           <td>{{ getBuildingByRoomId(schedule.roomId) }}</td>
           <td>{{ schedule.purpose }}</td>

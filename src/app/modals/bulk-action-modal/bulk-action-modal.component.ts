@@ -9,7 +9,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   styleUrl: './bulk-action-modal.component.scss',
 })
 export class BulkActionModalComponent {
-  @Input() actionType: 'PENDING' | 'APPROVED' | 'REJECTED' = 'PENDING';
+  @Input() actionType: 'PENDING' | 'APPROVED' | 'REJECTED' | 'DELETE' =
+    'PENDING';
   @Input() count: number = 0;
 
   constructor(public activeModal: NgbActiveModal) {}
@@ -21,8 +22,11 @@ export class BulkActionModalComponent {
       case 'REJECTED':
         return 'bi bi-x-circle-fill text-danger';
       case 'PENDING':
-      default:
         return 'bi bi-clock-history text-warning';
+      case 'DELETE':
+        return 'bi bi-trash-fill text-danger';
+      default:
+        return '';
     }
   }
 
@@ -33,8 +37,11 @@ export class BulkActionModalComponent {
       case 'REJECTED':
         return 'btn btn-danger';
       case 'PENDING':
-      default:
         return 'btn btn-warning';
+      case 'DELETE':
+        return 'btn btn-danger';
+      default:
+        return 'btn btn-primary';
     }
   }
 
