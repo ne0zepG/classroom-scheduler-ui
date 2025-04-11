@@ -6,7 +6,8 @@ import { catchError } from 'rxjs/operators';
 export interface Room {
   id: number;
   roomNumber: string;
-  building: string;
+  buildingId: number;
+  buildingName: string;
   capacity: number;
   hasProjector: boolean;
   hasComputers: boolean;

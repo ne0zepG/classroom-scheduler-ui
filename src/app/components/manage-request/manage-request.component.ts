@@ -17,7 +17,7 @@ import { SortColumn, sortData } from '../../utils/sortTable';
 import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 
 @Component({
-  selector: 'app-request',
+  selector: 'app-manage-request',
   standalone: true,
   imports: [
     CommonModule,
@@ -101,7 +101,7 @@ export class ManageRequestComponent implements OnInit {
           const room = this.rooms.find((r) => r.id === schedule.roomId);
           return {
             ...schedule,
-            building: room?.building || 'N/A',
+            building: room?.buildingName || 'N/A',
           };
         });
 
@@ -152,7 +152,7 @@ export class ManageRequestComponent implements OnInit {
   getBuildingByRoomId(roomId: number): string {
     if (!roomId || !this.rooms) return 'N/A';
     const room = this.rooms.find((room) => room.id === roomId);
-    return room ? room.building : 'N/A';
+    return room ? room.buildingName : 'N/A';
   }
 
   /**
