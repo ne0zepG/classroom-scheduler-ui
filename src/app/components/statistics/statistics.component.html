@@ -124,8 +124,9 @@
           </td>
           <td>
             <div *ngIf="slot.schedule">
-              <strong>Course / Purpose:</strong> {{ slot.schedule.purpose
-              }}<br />
+              <strong>Course:</strong>
+              {{ slot.schedule.courseCode }} -
+              {{ slot.schedule.courseDescription }}<br />
               <strong>Instructor:</strong> {{ slot.schedule.scheduledBy }}<br />
               <strong>Status:</strong>
               <span
@@ -171,7 +172,8 @@
           </td>
           <td>
             <div *ngIf="slot.schedule">
-              <strong>Purpose:</strong> {{ slot.schedule.purpose }}<br />
+              <strong>Course:</strong> {{ slot.schedule.courseCode }} -
+              {{ slot.schedule.courseDescription }}<br />
 
               <strong>Status:</strong>
               <span

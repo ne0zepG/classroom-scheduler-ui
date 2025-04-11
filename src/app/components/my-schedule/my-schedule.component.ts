@@ -1,36 +1,38 @@
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { forkJoin } from 'rxjs';
-import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
-import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
-import { Room, RoomApiService } from '../../services/roomApi';
 import {
   Schedule,
   ScheduleApiService,
   ScheduleWithBuilding,
 } from '../../services/scheduleApi';
-import { searchData } from '../../utils/searchTable';
+import { Room, RoomApiService } from '../../services/roomApi';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { SortColumn, sortData } from '../../utils/sortTable';
+import { searchData } from '../../utils/searchTable';
 import { formatTimeTo12Hour } from '../../utils/timeFormatter';
+import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
 import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
+import { forkJoin } from 'rxjs';
 
 @Component({
-  selector: 'app-manage-schedule',
+  selector: 'app-my-schedule',
   standalone: true,
   imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
-  templateUrl: './manage-schedule.component.html',
-  styleUrl: './manage-schedule.component.scss',
+  templateUrl: './my-schedule.component.html',
+  styleUrl: './my-schedule.component.scss',
 })
-export class ManageScheduleComponent implements OnInit {
+export class MyScheduleComponent {
   schedules: ScheduleWithBuilding[] = [];
   filteredSchedules: ScheduleWithBuilding[] = [];
   rooms: Room[] = [];
   isLoading = true;
   errorMessage = '';
+
+  // Current user email - hardcoded for now
+  currentUserEmail = 'faculty@college.edu';
 
   // Search and sort properties
   searchTerm = '';
@@ -54,10 +56,6 @@ export class ManageScheduleComponent implements OnInit {
   paginatedSchedules: ScheduleWithBuilding[] = [];
   Math = Math;
 
-  selectedSchedules: { [id: number]: boolean } = {};
-  selectedCount = 0;
-  selectAll = false;
-
   constructor(
     private scheduleApiService: ScheduleApiService,
     private roomApiService: RoomApiService,
@@ -73,9 +71,11 @@ export class ManageScheduleComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    // Load schedules and rooms in parallel for better performance
+    // Load schedules by email and rooms in parallel
     forkJoin({
-      schedules: this.scheduleApiService.getAllSchedules(),
+      schedules: this.scheduleApiService.getSchedulesByEmail(
+        this.currentUserEmail
+      ),
       rooms: this.roomApiService.getAllRooms(),
     }).subscribe({
       next: (result) => {
@@ -83,10 +83,10 @@ export class ManageScheduleComponent implements OnInit {
         this.rooms = result.rooms;
 
         // Enhance schedules with building information for search
-        this.schedules = this.schedules.map((schedules) => {
-          const room = this.rooms.find((r) => r.id === schedules.roomId);
+        this.schedules = this.schedules.map((schedule) => {
+          const room = this.rooms.find((r) => r.id === schedule.roomId);
           return {
-            ...schedules,
+            ...schedule,
             building: room?.buildingName || 'N/A',
           };
         });
@@ -107,12 +107,8 @@ export class ManageScheduleComponent implements OnInit {
     });
   }
 
-  // Open add schedule modal
-  openAddScheduleModal(): void {
-    // For debugging and check if rooms are loaded
-    console.log('Opening modal...');
-    console.log('Rooms available:', this.rooms.length);
-
+  // Open add schedule modal for requesting a new schedule
+  openRequestScheduleModal(): void {
     const modalRef = this.modalService.open(AddScheduleComponent, {
       size: 'lg',
       centered: true,
@@ -121,12 +117,13 @@ export class ManageScheduleComponent implements OnInit {
 
     // Pass the rooms data to the modal component
     modalRef.componentInstance.rooms = this.rooms;
+    modalRef.componentInstance.userId = 1; // This should be dynamic based on auth
+    modalRef.componentInstance.userName = this.currentUserEmail;
 
     // Subscribe to the result when modal is closed
     modalRef.closed.subscribe((result: Schedule | Schedule[]) => {
       if (result) {
         console.log('New schedule(s) added:', result);
-
         if (Array.isArray(result)) {
           // Handle array of schedules
           const schedulesWithBuilding = result.map((schedule) => {
@@ -139,7 +136,7 @@ export class ManageScheduleComponent implements OnInit {
 
           this.schedules = [...this.schedules, ...schedulesWithBuilding];
         } else {
-          // Handle single schedule (backwards compatibility)
+          // Handle single schedule
           const room = this.rooms.find((r) => r.id === result.roomId);
           this.schedules = [
             ...this.schedules,
@@ -155,106 +152,8 @@ export class ManageScheduleComponent implements OnInit {
     });
   }
 
-  // Open edit schedule modal
-  openEditScheduleModal(schedule: ScheduleWithBuilding): void {
-    console.log('Opening edit modal for schedule:', schedule.id);
-
-    // Create a clean schedule object without the building property
-    const cleanSchedule: Schedule = {
-      id: schedule.id,
-      roomId: schedule.roomId,
-      roomNumber: schedule.roomNumber,
-      userId: schedule.userId,
-      userName: schedule.userName,
-      date: schedule.date,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      courseId: schedule.courseId,
-      courseCode: schedule.courseCode,
-      courseDescription: schedule.courseDescription,
-      status: schedule.status,
-    };
-
-    const modalRef = this.modalService.open(AddScheduleComponent, {
-      size: 'lg',
-      centered: true,
-      backdrop: 'static',
-    });
-
-    // Pass data to the modal component
-    modalRef.componentInstance.rooms = this.rooms;
-    modalRef.componentInstance.isEditMode = true;
-    modalRef.componentInstance.existingSchedule = cleanSchedule;
-
-    // Handle the result when modal is closed
-    modalRef.closed.subscribe((updatedSchedule: Schedule) => {
-      if (updatedSchedule) {
-        console.log('Schedule updated:', updatedSchedule);
-
-        // Find and update the schedule in the list
-        const index = this.schedules.findIndex(
-          (b) => b.id === updatedSchedule.id
-        );
-        if (index !== -1) {
-          // Update with building info for search
-          const room = this.rooms.find((r) => r.id === updatedSchedule.roomId);
-          this.schedules[index] = {
-            ...updatedSchedule,
-            building: room?.buildingName || 'N/A',
-          };
-          this.applyFilters();
-        }
-      }
-    });
-  }
-
-  // Delete schedule modal
-  deleteSchedule(id: number): void {
-    const schedule = this.schedules.find((b) => b.id === id);
-    if (!schedule) return;
-
-    const modalRef = this.modalService.open(DeleteModalComponent, {
-      centered: true,
-      backdrop: 'static',
-    });
-
-    // Pass data to the delete modal
-    modalRef.componentInstance.itemId = id;
-    modalRef.componentInstance.itemName = `${schedule.courseCode} - ${schedule.courseDescription}`;
-    modalRef.componentInstance.roomNumber = schedule.roomNumber;
-    modalRef.componentInstance.building = this.getBuildingByRoomId(
-      schedule.roomId
-    );
-    modalRef.componentInstance.date = this.formatDate(schedule.date);
-    modalRef.componentInstance.startTime = this.formatTime(schedule.startTime);
-    modalRef.componentInstance.endTime = this.formatTime(schedule.endTime);
-
-    // Handle the result when modal is closed
-    modalRef.closed.subscribe((confirmedId: number) => {
-      if (confirmedId === id) {
-        this.scheduleApiService.deleteSchedule(id).subscribe({
-          next: () => {
-            // Update the main schedules array
-            this.schedules = this.schedules.filter(
-              (schedule) => schedule.id !== id
-            );
-
-            // Always call applyFilters() to update all dependent arrays
-            this.applyFilters();
-          },
-          error: (error: any) => {
-            console.error('Error deleting schedule:', error);
-            this.errorMessage = 'Failed to delete schedule. Please try again.';
-          },
-        });
-      }
-    });
-  }
-
   /**
    * Get the status badge class based on the schedule status
-   * @param status
-   * @returns
    */
   getStatusBadgeClass(status: string): string {
     switch (status?.toUpperCase()) {
@@ -270,8 +169,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Get the building name by room ID
-   * @param roomId
-   * @returns
    */
   getBuildingByRoomId(roomId: number): string {
     if (!roomId || !this.rooms) return 'N/A';
@@ -281,8 +178,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Format the date string to a more readable format
-   * @param dateString
-   * @returns
    */
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
@@ -296,8 +191,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Format the time string to a 12-hour format
-   * @param time
-   * @returns
    */
   formatTime(time: string): string {
     return formatTimeTo12Hour(time);
@@ -305,7 +198,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Sort the schedules based on the selected column and direction
-   * @param column
    */
   sort(column: string): void {
     if (this.sortColumn.column === column) {
@@ -321,8 +213,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Get the icon class for the sort indicator
-   * @param column
-   * @returns
    */
   getSortIcon(column: string): string {
     if (this.sortColumn.column !== column) {
@@ -335,7 +225,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Handle search input change
-   * @param event
    */
   onSearch(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -401,7 +290,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Change the current page and reapply filters
-   * @param page
    */
   changePage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
@@ -412,7 +300,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Change the number of items per page and reset to first page
-   * @param event
    */
   changePageSize(event: Event): void {
     const select = event.target as HTMLSelectElement;
@@ -423,7 +310,6 @@ export class ManageScheduleComponent implements OnInit {
 
   /**
    * Get the array of page numbers for pagination
-   * @returns
    */
   getPageArray(): number[] {
     const pages = [];
@@ -461,79 +347,10 @@ export class ManageScheduleComponent implements OnInit {
     return pages;
   }
 
-  toggleSelection(id: number): void {
-    this.selectedSchedules[id] = !this.selectedSchedules[id];
-    this.updateSelectionCount();
-    this.updateSelectAllState();
-  }
-
-  updateSelectionCount(): void {
-    this.selectedCount = Object.values(this.selectedSchedules).filter(
-      Boolean
-    ).length;
-  }
-
-  toggleSelectAll(): void {
-    this.selectAll = !this.selectAll;
-
-    for (const schedule of this.filteredSchedules) {
-      this.selectedSchedules[schedule.id] = this.selectAll;
-    }
-
-    this.updateSelectionCount();
-  }
-
-  updateSelectAllState(): void {
-    const filteredIds = this.filteredSchedules.map((s) => s.id);
-    const selectedFilteredCount = filteredIds.filter(
-      (id) => this.selectedSchedules[id]
-    ).length;
-    this.selectAll =
-      selectedFilteredCount === filteredIds.length && filteredIds.length > 0;
-  }
-
-  clearSelections(): void {
-    this.selectedSchedules = {};
-    this.selectedCount = 0;
-    this.selectAll = false;
-  }
-
-  // Open bulk delete confirmation modal
-  openBulkDeleteModal(): void {
-    const selectedIds = Object.entries(this.selectedSchedules)
-      .filter(([_, selected]) => selected)
-      .map(([id, _]) => parseInt(id, 10));
-
-    const modalRef = this.modalService.open(BulkActionModalComponent);
-    modalRef.componentInstance.actionType = 'DELETE';
-    modalRef.componentInstance.count = selectedIds.length;
-
-    modalRef.closed.subscribe(() => {
-      this.performBulkDelete(selectedIds);
-    });
-  }
-
-  // Perform bulk delete operation
-  performBulkDelete(ids: number[]): void {
-    this.scheduleApiService.deleteSchedulesBatch(ids).subscribe({
-      next: () => {
-        // Remove deleted items from arrays
-        this.schedules = this.schedules.filter((s) => !ids.includes(s.id));
-        this.applyFilters();
-        this.clearSelections();
-      },
-      error: (error) => {
-        console.error('Error performing bulk delete:', error);
-        this.errorMessage =
-          'Failed to delete selected schedules. Please try again.';
-      },
-    });
-  }
-
   /**
-   * Navigates back to the admin page.
+   * Navigates back to the home page
    */
   goBack() {
-    this.router.navigate(['/admin']);
+    this.router.navigate(['/']);
   }
 }

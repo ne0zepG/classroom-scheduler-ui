@@ -12,7 +12,9 @@ export interface Schedule {
   date: string;
   startTime: string;
   endTime: string;
-  purpose: string;
+  courseId: number;
+  courseCode: string;
+  courseDescription: string;
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
@@ -39,7 +41,7 @@ export class ScheduleApiService {
 
   constructor(private http: HttpClient) {}
 
-  // Fetch all schedules from the API
+  // Get all schedules from the API
   getAllSchedules(): Observable<Schedule[]> {
     console.log('Fetching all schedules from API...');
     return this.http
@@ -47,10 +49,17 @@ export class ScheduleApiService {
       .pipe(catchError(this.handleError));
   }
 
-  // Fetch schedules by ID
+  // Get schedules by ID
   getScheduleById(id: number): Observable<Schedule> {
     return this.http
       .get<Schedule>(`${this.apiUrl}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // Get schedules by user ID
+  getSchedulesByEmail(email: string): Observable<Schedule[]> {
+    return this.http
+      .get<Schedule[]>(`${this.apiUrl}/email/${email}`)
       .pipe(catchError(this.handleError));
   }
 

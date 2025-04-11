@@ -3,48 +3,31 @@ import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
-export interface Room {
+export interface Course {
   id: number;
-  roomNumber: string;
-  buildingId: number;
-  buildingName: string;
-  capacity: number;
-  hasProjector: boolean;
-  hasComputers: boolean;
+  courseCode: string;
+  description: string;
+  departmentId: number;
+  departmentName: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
-export class RoomApiService {
-  private apiUrl = 'http://localhost:8080/api/rooms';
+export class CourseApiService {
+  private apiUrl = 'http://localhost:8080/api/courses';
 
   constructor(private http: HttpClient) {}
 
-  // Fetch all rooms from the API
-  getAllRooms(): Observable<Room[]> {
+  getAllCourses(): Observable<Course[]> {
     return this.http
-      .get<Room[]>(this.apiUrl)
+      .get<Course[]>(this.apiUrl)
       .pipe(catchError(this.handleError));
   }
 
-  // Fetch rooms by ID
-  getRoomById(id: number): Observable<Room> {
+  getCoursesByDepartment(departmentId: number): Observable<Course[]> {
     return this.http
-      .get<Room>(`${this.apiUrl}/${id}`)
-      .pipe(catchError(this.handleError));
-  }
-
-  // Find available rooms based on date and time
-  findAvailableRooms(
-    date: string,
-    startTime: string,
-    endTime: string
-  ): Observable<Room[]> {
-    return this.http
-      .get<Room[]>(
-        `${this.apiUrl}/available?date=${date}&startTime=${startTime}&endTime=${endTime}`
-      )
+      .get<Course[]>(`${this.apiUrl}/department/${departmentId}`)
       .pipe(catchError(this.handleError));
   }
 

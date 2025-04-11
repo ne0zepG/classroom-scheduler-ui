@@ -4,10 +4,10 @@
       <button class="btn btn-outline-primary me-3" (click)="goBack()">
         <i class="bi bi-arrow-left"></i> Back
       </button>
-      <h2 class="mb-0">Manage Schedules</h2>
+      <h2 class="mb-0">My Schedules</h2>
     </div>
-    <button class="btn btn-primary" (click)="openAddScheduleModal()">
-      <i class="bi bi-plus-circle me-2"></i>Add New Schedule
+    <button class="btn btn-primary" (click)="openRequestScheduleModal()">
+      <i class="bi bi-plus-circle me-2"></i>Request New Schedule
     </button>
   </div>
 
@@ -53,27 +53,6 @@
     </div>
   </div>
 
-  <!-- Bulk actions for selected schedules -->
-  <div
-    *ngIf="!isLoading && selectedCount > 0"
-    class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light border rounded"
-  >
-    <div>
-      <span class="fw-bold me-2">{{ selectedCount }} items selected</span>
-      <button
-        class="btn btn-sm btn-link text-decoration-none"
-        (click)="clearSelections()"
-      >
-        Clear selection
-      </button>
-    </div>
-    <div class="btn-group" role="group">
-      <button class="btn btn-danger btn-sm" (click)="openBulkDeleteModal()">
-        <i class="bi bi-trash me-1"></i> Delete Selected
-      </button>
-    </div>
-  </div>
-
   <!-- Items per page selector -->
   <div
     *ngIf="!isLoading && filteredSchedules.length > 0"
@@ -99,22 +78,8 @@
     <table class="table table-striped table-hover">
       <thead>
         <tr>
-          <th style="width: 40px">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                id="selectAll"
-                [checked]="selectAll"
-                (change)="toggleSelectAll()"
-              />
-              <label class="form-check-label" for="selectAll">
-                <span class="visually-hidden">Select All</span>
-              </label>
-            </div>
-          </th>
           <th style="cursor: pointer" (click)="sort('roomNumber')">
-            Room No.
+            Room Number
             <i class="bi {{ getSortIcon('roomNumber') }} ms-1"></i>
           </th>
           <th style="cursor: pointer" (click)="sort('roomId')">
@@ -141,25 +106,10 @@
             Status
             <i class="bi {{ getSortIcon('status') }} ms-1"></i>
           </th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let schedule of paginatedSchedules">
-          <td>
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                [id]="'select-' + schedule.id"
-                [checked]="selectedSchedules[schedule.id]"
-                (change)="toggleSelection(schedule.id)"
-              />
-              <label class="form-check-label" [for]="'select-' + schedule.id">
-                <span class="visually-hidden">Select</span>
-              </label>
-            </div>
-          </td>
           <td>{{ schedule.roomNumber }}</td>
           <td>{{ getBuildingByRoomId(schedule.roomId) }}</td>
           <td>{{ schedule.courseCode }}</td>
@@ -178,22 +128,6 @@
               {{ schedule.status }}
             </span>
           </td>
-          <td>
-            <div class="btn-group btn-group-sm">
-              <button
-                class="btn btn-outline-primary"
-                (click)="openEditScheduleModal(schedule)"
-              >
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button
-                class="btn btn-outline-danger"
-                (click)="deleteSchedule(schedule.id)"
-              >
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          </td>
         </tr>
       </tbody>
     </table>
@@ -211,11 +145,11 @@
       </button>
     </div>
 
-    <!-- No requests message -->
+    <!-- No schedules message -->
     <div *ngIf="schedules.length === 0" class="text-center my-5">
       <i class="bi bi-calendar-x display-1 text-muted"></i>
       <p class="lead mt-3">No schedules found</p>
-      <p class="text-muted">Create a new schedule to get started</p>
+      <p class="text-muted">Request a new schedule to get started</p>
     </div>
   </div>
 

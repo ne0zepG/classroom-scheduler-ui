@@ -17,6 +17,8 @@ import {
   Schedule,
   ScheduleApiService,
 } from '../../services/scheduleApi';
+import { Course, CourseApiService } from '../../services/courseApi';
+import { Department, DepartmentApiService } from '../../services/departmentApi';
 
 @Component({
   selector: 'app-add-schedule',
@@ -42,6 +44,9 @@ export class AddScheduleComponent implements OnInit {
 
   scheduleForm: FormGroup;
   selectedRoom: Room | null = null;
+  courses: Course[] = [];
+  departments: Department[] = [];
+  selectedDepartment: number | null = null;
   isLoading = false;
   errorMessage = '';
   today = new Date().toISOString().split('T')[0]; // For min date in date picker
@@ -59,6 +64,8 @@ export class AddScheduleComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private scheduleApiService: ScheduleApiService,
+    private courseApiService: CourseApiService,
+    private departmentApiService: DepartmentApiService,
     public activeModal: NgbActiveModal
   ) {
     this.scheduleForm = this.fb.group({
@@ -66,14 +73,8 @@ export class AddScheduleComponent implements OnInit {
       date: [this.today, Validators.required],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
-      purpose: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(5),
-          Validators.maxLength(200),
-        ],
-      ],
+      courseId: ['', Validators.required],
+      departmentId: [''],
       isRecurring: [false],
       endDate: [''],
       daysOfWeek: this.fb.array([]),
@@ -99,13 +100,17 @@ export class AddScheduleComponent implements OnInit {
 
   // Initialize the component
   ngOnInit(): void {
-    // Sort rooms for dropdown
+    // Sort rooms for dropdown (keep this part)
     this.rooms.sort((a, b) => {
-      if (a.building !== b.building) {
-        return a.building.localeCompare(b.building);
+      if (a.buildingName !== b.buildingName) {
+        return a.buildingName.localeCompare(b.buildingName);
       }
       return a.roomNumber.localeCompare(b.roomNumber);
     });
+
+    // Load departments and courses
+    this.loadDepartments();
+    this.loadCourses();
 
     // If in edit mode, populate the form with existing schedule data
     if (this.isEditMode && this.existingSchedule) {
@@ -131,12 +136,56 @@ export class AddScheduleComponent implements OnInit {
         date: dateValue,
         startTime: startTime,
         endTime: endTime,
-        purpose: this.existingSchedule.purpose,
+        courseId: this.existingSchedule.courseId,
       });
 
       // For edit mode, store the original user info
       this.userId = this.existingSchedule.userId;
       this.userName = this.existingSchedule.userName;
+    }
+  }
+
+  loadDepartments(): void {
+    this.departmentApiService.getAllDepartments().subscribe({
+      next: (departments) => {
+        this.departments = departments;
+      },
+      error: (error) => {
+        console.error('Error loading departments', error);
+        this.errorMessage = 'Failed to load departments';
+      },
+    });
+  }
+
+  loadCourses(): void {
+    this.courseApiService.getAllCourses().subscribe({
+      next: (courses) => {
+        this.courses = courses;
+      },
+      error: (error) => {
+        console.error('Error loading courses', error);
+        this.errorMessage = 'Failed to load courses';
+      },
+    });
+  }
+
+  onDepartmentChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const departmentId = Number(selectElement.value);
+
+    if (departmentId) {
+      // Load courses for the selected department
+      this.courseApiService.getCoursesByDepartment(departmentId).subscribe({
+        next: (courses) => {
+          this.courses = courses;
+        },
+        error: (error) => {
+          console.error('Error loading courses for department', error);
+        },
+      });
+    } else {
+      // Load all courses if no department is selected
+      this.loadCourses();
     }
   }
 
@@ -165,6 +214,11 @@ export class AddScheduleComponent implements OnInit {
     const startTime = this.formatTime(formValue.startTime);
     const endTime = this.formatTime(formValue.endTime);
 
+    // Find the selected course to get additional details
+    const selectedCourse = this.courses.find(
+      (course) => course.id === Number(formValue.courseId)
+    );
+
     if (this.isEditMode && this.existingSchedule) {
       // Prepare updated schedule object
       const updatedSchedule: Schedule = {
@@ -174,7 +228,9 @@ export class AddScheduleComponent implements OnInit {
         date: formattedDate,
         startTime: startTime,
         endTime: endTime,
-        purpose: formValue.purpose,
+        courseId: Number(formValue.courseId),
+        courseCode: selectedCourse?.courseCode || '',
+        courseDescription: selectedCourse?.description || '',
         // Note: status is preserved from the existing schedule
       };
 
@@ -218,7 +274,9 @@ export class AddScheduleComponent implements OnInit {
             userName: this.userName,
             startTime: startTime,
             endTime: endTime,
-            purpose: formValue.purpose,
+            courseId: Number(formValue.courseId),
+            courseCode: selectedCourse?.courseCode || '',
+            courseDescription: selectedCourse?.description || '',
             status: 'PENDING',
           },
           recurrencePattern: {
@@ -254,7 +312,9 @@ export class AddScheduleComponent implements OnInit {
           date: formattedDate,
           startTime: startTime,
           endTime: endTime,
-          purpose: formValue.purpose,
+          courseId: Number(formValue.courseId),
+          courseCode: selectedCourse?.courseCode || '',
+          courseDescription: selectedCourse?.description || '',
           status: 'PENDING',
         };
 

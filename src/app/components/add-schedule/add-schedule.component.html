@@ -53,7 +53,7 @@
         type="text"
         class="form-control"
         id="building"
-        [value]="selectedRoom?.building || ''"
+        [value]="selectedRoom?.buildingName || ''"
         readonly
       />
     </div>
@@ -213,33 +213,45 @@
       </div>
     </div>
 
-    <!-- Purpose -->
+    <!-- Department and Course -->
     <div class="mb-3">
-      <label for="purpose" class="form-label">Purpose / Course</label>
-      <textarea
-        class="form-control"
-        id="purpose"
-        formControlName="purpose"
-        rows="3"
-        placeholder="Enter the purpose or course name for this schedule"
-      ></textarea>
-      <div
-        *ngIf="
-          scheduleForm.get('purpose')?.invalid &&
-          (scheduleForm.get('purpose')?.dirty ||
-            scheduleForm.get('purpose')?.touched)
-        "
-        class="text-danger small"
+      <label for="departmentSelect" class="form-label"
+        >Department (Optional)</label
       >
-        <div *ngIf="scheduleForm.get('purpose')?.errors?.['required']">
-          Purpose is required
-        </div>
-        <div *ngIf="scheduleForm.get('purpose')?.errors?.['minlength']">
-          Purpose must be at least 5 characters
-        </div>
-        <div *ngIf="scheduleForm.get('purpose')?.errors?.['maxlength']">
-          Purpose cannot exceed 200 characters
-        </div>
+      <select
+        id="departmentSelect"
+        class="form-select"
+        formControlName="departmentId"
+        (change)="onDepartmentChange($event)"
+      >
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept.id">
+          {{ dept.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="courseSelect" class="form-label">Course</label>
+      <select
+        id="courseSelect"
+        class="form-select"
+        formControlName="courseId"
+        [class.is-invalid]="
+          scheduleForm.controls['courseId'].invalid &&
+          scheduleForm.controls['courseId'].touched
+        "
+      >
+        <option value="" disabled selected>Select Course</option>
+        <option *ngFor="let course of courses" [value]="course.id">
+          {{ course.courseCode }} - {{ course.description }}
+        </option>
+      </select>
+      <div
+        class="invalid-feedback"
+        *ngIf="scheduleForm.controls['courseId'].errors?.['required']"
+      >
+        Please select a course.
       </div>
     </div>
   </form>

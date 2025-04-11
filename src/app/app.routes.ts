@@ -4,6 +4,7 @@ import { HomePageComponent } from './components/home-page/home-page.component';
 import { ManageRequestComponent } from './components/manage-request/manage-request.component';
 import { ManageScheduleComponent } from './components/manage-schedule/manage-schedule.component';
 import { StatisticsComponent } from './components/statistics/statistics.component';
+import { MyScheduleComponent } from './components/my-schedule/my-schedule.component';
 
 export const routes: Routes = [
   {
@@ -15,6 +16,11 @@ export const routes: Routes = [
     path: 'statistics',
     component: StatisticsComponent,
     title: 'Classroom Statistics',
+  },
+  {
+    path: 'my-schedules',
+    component: MyScheduleComponent,
+    title: 'My Schedules',
   },
   {
     path: 'manage-schedules',

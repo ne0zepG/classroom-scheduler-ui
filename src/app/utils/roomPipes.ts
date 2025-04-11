@@ -10,7 +10,7 @@ export class RoomsByBuildingPipe implements PipeTransform {
     if (!rooms || !rooms.length) return [];
 
     // Extract unique building names
-    const buildings = [...new Set(rooms.map((room) => room.building))];
+    const buildings = [...new Set(rooms.map((room) => room.buildingName))];
 
     // Sort alphabetically
     return buildings.sort();
@@ -26,7 +26,7 @@ export class FilterByBuildingPipe implements PipeTransform {
     if (!rooms || !rooms.length || !building) return [];
 
     return rooms
-      .filter((room) => room.building === building)
+      .filter((room) => room.buildingName === building)
       .sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));
   }
 }
