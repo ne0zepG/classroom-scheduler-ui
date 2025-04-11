@@ -16,6 +16,7 @@ import { SortColumn, sortData } from '../../utils/sortTable';
 import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
 import { DeleteModalComponent } from '../../modals/delete-modal/delete-modal.component';
+import { BulkActionModalComponent } from '../../modals/bulk-action-modal/bulk-action-modal.component';
 
 @Component({
   selector: 'app-schedule',
@@ -51,6 +52,10 @@ export class ScheduleComponent implements OnInit {
   pageSizeOptions = [10, 20, 30];
   paginatedSchedules: ScheduleWithBuilding[] = [];
   Math = Math;
+
+  selectedSchedules: { [id: number]: boolean } = {};
+  selectedCount = 0;
+  selectAll = false;
 
   constructor(
     private scheduleApiService: ScheduleApiService,
@@ -451,6 +456,75 @@ export class ScheduleComponent implements OnInit {
     }
 
     return pages;
+  }
+
+  toggleSelection(id: number): void {
+    this.selectedSchedules[id] = !this.selectedSchedules[id];
+    this.updateSelectionCount();
+    this.updateSelectAllState();
+  }
+
+  updateSelectionCount(): void {
+    this.selectedCount = Object.values(this.selectedSchedules).filter(
+      Boolean
+    ).length;
+  }
+
+  toggleSelectAll(): void {
+    this.selectAll = !this.selectAll;
+
+    for (const schedule of this.filteredSchedules) {
+      this.selectedSchedules[schedule.id] = this.selectAll;
+    }
+
+    this.updateSelectionCount();
+  }
+
+  updateSelectAllState(): void {
+    const filteredIds = this.filteredSchedules.map((s) => s.id);
+    const selectedFilteredCount = filteredIds.filter(
+      (id) => this.selectedSchedules[id]
+    ).length;
+    this.selectAll =
+      selectedFilteredCount === filteredIds.length && filteredIds.length > 0;
+  }
+
+  clearSelections(): void {
+    this.selectedSchedules = {};
+    this.selectedCount = 0;
+    this.selectAll = false;
+  }
+
+  // Open bulk delete confirmation modal
+  openBulkDeleteModal(): void {
+    const selectedIds = Object.entries(this.selectedSchedules)
+      .filter(([_, selected]) => selected)
+      .map(([id, _]) => parseInt(id, 10));
+
+    const modalRef = this.modalService.open(BulkActionModalComponent);
+    modalRef.componentInstance.actionType = 'DELETE';
+    modalRef.componentInstance.count = selectedIds.length;
+
+    modalRef.closed.subscribe(() => {
+      this.performBulkDelete(selectedIds);
+    });
+  }
+
+  // Perform bulk delete operation
+  performBulkDelete(ids: number[]): void {
+    this.scheduleApiService.deleteSchedulesBatch(ids).subscribe({
+      next: () => {
+        // Remove deleted items from arrays
+        this.schedules = this.schedules.filter((s) => !ids.includes(s.id));
+        this.applyFilters();
+        this.clearSelections();
+      },
+      error: (error) => {
+        console.error('Error performing bulk delete:', error);
+        this.errorMessage =
+          'Failed to delete selected schedules. Please try again.';
+      },
+    });
   }
 
   /**
