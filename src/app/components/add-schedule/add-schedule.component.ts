@@ -8,19 +8,15 @@ import {
   Validators,
 } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { Course, CourseApiService } from '../../services/courseApi';
+import { Department, DepartmentApiService } from '../../services/departmentApi';
+import { Program, ProgramApiService } from '../../services/programApi';
 import { Room } from '../../services/roomApi';
-import {
-  FilterByBuildingPipe,
-  RoomsByBuildingPipe,
-} from '../../utils/roomPipes';
 import {
   RecurringScheduleRequest,
   Schedule,
   ScheduleApiService,
 } from '../../services/scheduleApi';
-import { Course, CourseApiService } from '../../services/courseApi';
-import { Department, DepartmentApiService } from '../../services/departmentApi';
-import { Program, ProgramApiService } from '../../services/programApi';
 
 @Component({
   selector: 'app-add-schedule',
@@ -121,6 +117,11 @@ export class AddScheduleComponent implements OnInit {
 
     // Load departments
     this.loadDepartments();
+
+    // Set up the form controls
+    this.scheduleForm.get('roomId')?.disable();
+    this.scheduleForm.get('programId')?.disable();
+    this.scheduleForm.get('courseId')?.disable();
 
     // If in edit mode, populate the form with existing schedule data
     if (this.isEditMode && this.existingSchedule) {
@@ -252,6 +253,13 @@ export class AddScheduleComponent implements OnInit {
       .filter((room) => room.buildingName === this.selectedBuilding)
       .sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));
 
+    // Enable/disable room control based on building selection
+    if (this.selectedBuilding) {
+      this.scheduleForm.get('roomId')?.enable();
+    } else {
+      this.scheduleForm.get('roomId')?.disable();
+    }
+
     // Reset room selection if building is changed
     if (this.scheduleForm.get('roomId')?.value) {
       // Check if selected room is in the new filtered list
@@ -274,10 +282,13 @@ export class AddScheduleComponent implements OnInit {
     if (departmentId) {
       // Load programs for the selected department
       this.loadProgramsByDepartment(departmentId);
+      this.scheduleForm.get('programId')?.enable();
     } else {
       // Clear programs and courses when no department is selected
       this.programs = [];
       this.courses = [];
+      this.scheduleForm.get('programId')?.disable();
+      this.scheduleForm.get('courseId')?.disable();
       this.scheduleForm.patchValue({
         programId: '',
         courseId: '',
@@ -292,9 +303,11 @@ export class AddScheduleComponent implements OnInit {
     if (programId) {
       // Load courses for the selected program
       this.loadCoursesByProgram(programId);
+      this.scheduleForm.get('courseId')?.enable();
     } else {
       // Clear courses when no program is selected
       this.courses = [];
+      this.scheduleForm.get('courseId')?.disable();
       this.scheduleForm.patchValue({
         courseId: '',
       });
