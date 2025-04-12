@@ -105,9 +105,9 @@
       >
     </div>
 
-    <!-- Date, Start Time, End Time in a single row -->
+    <!-- Date, Start Time, End Time -->
     <div class="row g-3">
-      <!-- Date picker - rename to Start Date when recurring -->
+      <!-- Date picker -->
       <div class="col-md-4 mb-3">
         <label for="date" class="form-label">{{
           isRecurring ? "Start Date" : "Date"
@@ -219,24 +219,61 @@
       </div>
     </div>
 
-    <!-- Department and Course -->
-    <div class="mb-3">
-      <label for="departmentSelect" class="form-label"
-        >Department (Optional)</label
-      >
-      <select
-        id="departmentSelect"
-        class="form-select"
-        formControlName="departmentId"
-        (change)="onDepartmentChange($event)"
-      >
-        <option value="">All Departments</option>
-        <option *ngFor="let dept of departments" [value]="dept.id">
-          {{ dept.name }}
-        </option>
-      </select>
+    <!-- Department and Program -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="departmentSelect" class="form-label">Department</label>
+        <select
+          id="departmentSelect"
+          class="form-select"
+          formControlName="departmentId"
+          (change)="onDepartmentChange($event)"
+          [class.is-invalid]="
+            scheduleForm.controls['departmentId'].invalid &&
+            scheduleForm.controls['departmentId'].touched
+          "
+        >
+          <option value="" disabled selected>Select Department</option>
+          <option *ngFor="let dept of departments" [value]="dept.id">
+            {{ dept.name }}
+          </option>
+        </select>
+        <div
+          class="invalid-feedback"
+          *ngIf="scheduleForm.controls['departmentId'].errors?.['required']"
+        >
+          Please select a department.
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="programSelect" class="form-label">Program</label>
+        <select
+          id="programSelect"
+          class="form-select"
+          formControlName="programId"
+          (change)="onProgramChange($event)"
+          [class.is-invalid]="
+            scheduleForm.controls['programId'].invalid &&
+            scheduleForm.controls['programId'].touched
+          "
+          [disabled]="!scheduleForm.controls['departmentId'].value"
+        >
+          <option value="" disabled selected>Select Program</option>
+          <option *ngFor="let program of programs" [value]="program.id">
+            {{ program.name }}
+          </option>
+        </select>
+        <div
+          class="invalid-feedback"
+          *ngIf="scheduleForm.controls['programId'].errors?.['required']"
+        >
+          Please select a program.
+        </div>
+      </div>
     </div>
 
+    <!-- Course -->
     <div class="mb-3">
       <label for="courseSelect" class="form-label">Course</label>
       <select
@@ -247,6 +284,7 @@
           scheduleForm.controls['courseId'].invalid &&
           scheduleForm.controls['courseId'].touched
         "
+        [disabled]="!scheduleForm.controls['programId'].value"
       >
         <option value="" disabled selected>Select Course</option>
         <option *ngFor="let course of courses" [value]="course.id">
