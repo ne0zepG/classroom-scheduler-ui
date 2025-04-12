@@ -3,6 +3,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -24,12 +25,7 @@ import { Program, ProgramApiService } from '../../services/programApi';
 @Component({
   selector: 'app-add-schedule',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RoomsByBuildingPipe,
-    FilterByBuildingPipe,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './add-schedule.component.html',
   styleUrl: './add-schedule.component.scss',
 })
@@ -51,6 +47,10 @@ export class AddScheduleComponent implements OnInit {
   departments: Department[] = [];
   programs: Program[] = [];
   selectedDepartment: number | null = null;
+  selectedBuilding: string = '';
+  buildings: string[] = [];
+  filteredRooms: Room[] = [];
+  buildingTouched = false;
   isLoading = false;
   errorMessage = '';
   today = new Date().toISOString().split('T')[0]; // For min date in date picker
@@ -114,6 +114,11 @@ export class AddScheduleComponent implements OnInit {
       return a.roomNumber.localeCompare(b.roomNumber);
     });
 
+    // Extract unique building names
+    this.buildings = [
+      ...new Set(this.rooms.map((room) => room.buildingName)),
+    ].sort();
+
     // Load departments
     this.loadDepartments();
 
@@ -123,6 +128,12 @@ export class AddScheduleComponent implements OnInit {
       this.selectedRoom =
         this.rooms.find((room) => room.id === this.existingSchedule!.roomId) ||
         null;
+
+      // Set the selected building based on the selected room
+      if (this.selectedRoom) {
+        this.selectedBuilding = this.selectedRoom.buildingName;
+        this.onBuildingChange(); // Filter rooms for this building
+      }
 
       // Format the date properly for the date input (YYYY-MM-DD)
       let dateValue = this.existingSchedule.date;
@@ -230,6 +241,30 @@ export class AddScheduleComponent implements OnInit {
         console.error('Error loading course details', error);
       },
     });
+  }
+
+  // Add this method to handle building change
+  onBuildingChange(): void {
+    this.buildingTouched = true;
+
+    // Filter the rooms to show only those from the selected building
+    this.filteredRooms = this.rooms
+      .filter((room) => room.buildingName === this.selectedBuilding)
+      .sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));
+
+    // Reset room selection if building is changed
+    if (this.scheduleForm.get('roomId')?.value) {
+      // Check if selected room is in the new filtered list
+      const currentRoomId = Number(this.scheduleForm.get('roomId')?.value);
+      const roomExists = this.filteredRooms.some(
+        (room) => room.id === currentRoomId
+      );
+
+      if (!roomExists) {
+        this.scheduleForm.patchValue({ roomId: '' });
+        this.selectedRoom = null;
+      }
+    }
   }
 
   onDepartmentChange(event: Event): void {

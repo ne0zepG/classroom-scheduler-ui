@@ -19,49 +19,53 @@
 <div class="modal-body">
   <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
     <!-- Room selection -->
-    <div class="mb-3">
-      <label for="roomId" class="form-label">Select Room</label>
-      <select
-        class="form-select"
-        id="roomId"
-        formControlName="roomId"
-        (change)="onRoomChange($event)"
-      >
-        <option value="" disabled selected>-- Select a room --</option>
-        <optgroup
-          *ngFor="let building of rooms | roomsByBuilding"
-          [label]="building"
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="buildingSelect" class="form-label">Building</label>
+        <select
+          class="form-select"
+          id="buildingSelect"
+          [(ngModel)]="selectedBuilding"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onBuildingChange()"
+          required
         >
-          <option
-            *ngFor="let room of rooms | filterByBuilding : building"
-            [value]="room.id"
-          >
+          <option value="" disabled selected>Select a building</option>
+          <option *ngFor="let building of buildings">{{ building }}</option>
+        </select>
+        <div
+          *ngIf="!selectedBuilding && buildingTouched"
+          class="text-danger small mt-1"
+        >
+          Please select a building
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="roomId" class="form-label">Room</label>
+        <select
+          class="form-select"
+          id="roomId"
+          formControlName="roomId"
+          (change)="onRoomChange($event)"
+          [disabled]="!selectedBuilding"
+        >
+          <option value="" disabled selected>Select a room</option>
+          <option *ngFor="let room of filteredRooms" [value]="room.id">
             {{ room.roomNumber }} (Capacity: {{ room.capacity }})
           </option>
-        </optgroup>
-      </select>
-      <div
-        *ngIf="
-          scheduleForm.get('roomId')?.invalid &&
-          (scheduleForm.get('roomId')?.dirty ||
-            scheduleForm.get('roomId')?.touched)
-        "
-        class="text-danger small"
-      >
-        Please select a room
+        </select>
+        <div
+          *ngIf="
+            scheduleForm.get('roomId')?.invalid &&
+            (scheduleForm.get('roomId')?.dirty ||
+              scheduleForm.get('roomId')?.touched)
+          "
+          class="text-danger small mt-1"
+        >
+          Please select a room
+        </div>
       </div>
-    </div>
-
-    <!-- Building information (read-only) -->
-    <div class="mb-3">
-      <label for="building" class="form-label">Building</label>
-      <input
-        type="text"
-        class="form-control"
-        id="building"
-        [value]="selectedRoom?.buildingName || ''"
-        readonly
-      />
     </div>
 
     <!-- Room features display -->
