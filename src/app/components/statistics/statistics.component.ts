@@ -1,10 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Room, RoomApiService } from '../../services/roomApi';
 import { ScheduleApiService } from '../../services/scheduleApi';
-import { Router } from '@angular/router';
 
 interface ScheduleDisplay {
   id: number;
@@ -27,7 +26,7 @@ interface TimeSlot {
 @Component({
   selector: 'app-statistics',
   standalone: true,
-  imports: [CommonModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './statistics.component.html',
   styleUrl: './statistics.component.scss',
 })

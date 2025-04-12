@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -19,7 +18,7 @@ import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
 @Component({
   selector: 'app-my-schedule',
   standalone: true,
-  imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './my-schedule.component.html',
   styleUrl: './my-schedule.component.scss',
 })
