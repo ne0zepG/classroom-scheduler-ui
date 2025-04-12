@@ -7,8 +7,8 @@ export interface Course {
   id: number;
   courseCode: string;
   description: string;
-  departmentId: number;
-  departmentName: string;
+  programId: number;
+  programName: string;
 }
 
 @Injectable({
@@ -25,9 +25,15 @@ export class CourseApiService {
       .pipe(catchError(this.handleError));
   }
 
-  getCoursesByDepartment(departmentId: number): Observable<Course[]> {
+  getCourseById(id: number): Observable<Course> {
     return this.http
-      .get<Course[]>(`${this.apiUrl}/department/${departmentId}`)
+      .get<Course>(`${this.apiUrl}/${id}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getCoursesByProgram(programId: number): Observable<Course[]> {
+    return this.http
+      .get<Course[]>(`${this.apiUrl}/program/${programId}`)
       .pipe(catchError(this.handleError));
   }
 

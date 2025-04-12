@@ -19,6 +19,7 @@ import {
 } from '../../services/scheduleApi';
 import { Course, CourseApiService } from '../../services/courseApi';
 import { Department, DepartmentApiService } from '../../services/departmentApi';
+import { Program, ProgramApiService } from '../../services/programApi';
 
 @Component({
   selector: 'app-add-schedule',
@@ -48,6 +49,7 @@ export class AddScheduleComponent implements OnInit {
   selectedRoom: Room | null = null;
   courses: Course[] = [];
   departments: Department[] = [];
+  programs: Program[] = [];
   selectedDepartment: number | null = null;
   isLoading = false;
   errorMessage = '';
@@ -68,6 +70,7 @@ export class AddScheduleComponent implements OnInit {
     private scheduleApiService: ScheduleApiService,
     private courseApiService: CourseApiService,
     private departmentApiService: DepartmentApiService,
+    private programApiService: ProgramApiService,
     public activeModal: NgbActiveModal
   ) {
     this.scheduleForm = this.fb.group({
@@ -75,8 +78,9 @@ export class AddScheduleComponent implements OnInit {
       date: [this.today, Validators.required],
       startTime: ['', Validators.required],
       endTime: ['', Validators.required],
+      departmentId: ['', Validators.required],
+      programId: ['', Validators.required],
       courseId: ['', Validators.required],
-      departmentId: [''],
       isRecurring: [false],
       endDate: [''],
       daysOfWeek: this.fb.array([]),
@@ -110,9 +114,8 @@ export class AddScheduleComponent implements OnInit {
       return a.roomNumber.localeCompare(b.roomNumber);
     });
 
-    // Load departments and courses
+    // Load departments
     this.loadDepartments();
-    this.loadCourses();
 
     // If in edit mode, populate the form with existing schedule data
     if (this.isEditMode && this.existingSchedule) {
@@ -131,6 +134,9 @@ export class AddScheduleComponent implements OnInit {
       // Format times for the inputs (HH:MM)
       const startTime = this.existingSchedule.startTime.substring(0, 5);
       const endTime = this.existingSchedule.endTime.substring(0, 5);
+
+      // For edit mode, fetch the course details to get program and department
+      this.loadCourseDetails(this.existingSchedule.courseId);
 
       // Update the form with existing values
       this.scheduleForm.patchValue({
@@ -159,14 +165,69 @@ export class AddScheduleComponent implements OnInit {
     });
   }
 
-  loadCourses(): void {
-    this.courseApiService.getAllCourses().subscribe({
+  loadProgramsByDepartment(departmentId: number): void {
+    this.programApiService.getProgramsByDepartment(departmentId).subscribe({
+      next: (programs) => {
+        this.programs = programs;
+        // Reset program and course selections when department changes
+        this.scheduleForm.patchValue({
+          programId: '',
+          courseId: '',
+        });
+        this.courses = []; // Clear courses when department changes
+      },
+      error: (error) => {
+        console.error('Error loading programs for department', error);
+        this.errorMessage = 'Failed to load programs';
+      },
+    });
+  }
+
+  loadCoursesByProgram(programId: number): void {
+    this.courseApiService.getCoursesByProgram(programId).subscribe({
       next: (courses) => {
         this.courses = courses;
       },
       error: (error) => {
-        console.error('Error loading courses', error);
+        console.error('Error loading courses for program', error);
         this.errorMessage = 'Failed to load courses';
+      },
+    });
+  }
+
+  loadCourseDetails(courseId: number): void {
+    this.courseApiService.getCourseById(courseId).subscribe({
+      next: (course) => {
+        // Once we get course details, load its program and department
+        if (course.programId) {
+          // Set department ID and load programs
+          const programId = course.programId;
+
+          // Find the program to get its department
+          this.programApiService.getProgramById(programId).subscribe({
+            next: (program) => {
+              if (program && program.departmentId) {
+                // Set department, which will load the programs for that department
+                this.scheduleForm.patchValue({
+                  departmentId: program.departmentId,
+                });
+                this.loadProgramsByDepartment(program.departmentId);
+
+                // Set program after a short delay to ensure programs are loaded
+                setTimeout(() => {
+                  this.scheduleForm.patchValue({ programId: programId });
+                  this.loadCoursesByProgram(programId);
+                }, 300);
+              }
+            },
+            error: (error) => {
+              console.error('Error loading program details', error);
+            },
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error loading course details', error);
       },
     });
   }
@@ -176,18 +237,32 @@ export class AddScheduleComponent implements OnInit {
     const departmentId = Number(selectElement.value);
 
     if (departmentId) {
-      // Load courses for the selected department
-      this.courseApiService.getCoursesByDepartment(departmentId).subscribe({
-        next: (courses) => {
-          this.courses = courses;
-        },
-        error: (error) => {
-          console.error('Error loading courses for department', error);
-        },
-      });
+      // Load programs for the selected department
+      this.loadProgramsByDepartment(departmentId);
     } else {
-      // Load all courses if no department is selected
-      this.loadCourses();
+      // Clear programs and courses when no department is selected
+      this.programs = [];
+      this.courses = [];
+      this.scheduleForm.patchValue({
+        programId: '',
+        courseId: '',
+      });
+    }
+  }
+
+  onProgramChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    const programId = Number(selectElement.value);
+
+    if (programId) {
+      // Load courses for the selected program
+      this.loadCoursesByProgram(programId);
+    } else {
+      // Clear courses when no program is selected
+      this.courses = [];
+      this.scheduleForm.patchValue({
+        courseId: '',
+      });
     }
   }
 
@@ -254,7 +329,7 @@ export class AddScheduleComponent implements OnInit {
         });
     } else {
       if (formValue.isRecurring) {
-        // Create recurring schedule
+        // Handle recurring schedule creation
         const endDate = new Date(formValue.endDate).toISOString().split('T')[0];
 
         // Get selected days
@@ -305,7 +380,7 @@ export class AddScheduleComponent implements OnInit {
             },
           });
       } else {
-        // Original add functionality
+        // Handle single schedule creation
         const newSchedule: Partial<Schedule> = {
           roomId: Number(formValue.roomId),
           roomNumber: this.selectedRoom?.roomNumber || '',
