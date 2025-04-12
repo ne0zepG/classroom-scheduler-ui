@@ -17,6 +17,15 @@ import {
   Schedule,
   ScheduleApiService,
 } from '../../services/scheduleApi';
+import {
+  catchError,
+  EMPTY,
+  forkJoin,
+  map,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 
 @Component({
   selector: 'app-add-schedule',
@@ -208,40 +217,74 @@ export class AddScheduleComponent implements OnInit {
   }
 
   loadCourseDetails(courseId: number): void {
-    this.courseApiService.getCourseById(courseId).subscribe({
-      next: (course) => {
-        // Once we get course details, load its program and department
-        if (course.programId) {
-          // Set department ID and load programs
+    // Show loading state if needed
+    this.isLoading = true;
+
+    // Get course details
+    this.courseApiService
+      .getCourseById(courseId)
+      .pipe(
+        // Handle case where course doesn't exist or has no program
+        switchMap((course) => {
+          if (!course || !course.programId) {
+            return throwError(() => new Error('Invalid course data'));
+          }
+
+          // Store programId for later use
           const programId = course.programId;
 
-          // Find the program to get its department
-          this.programApiService.getProgramById(programId).subscribe({
-            next: (program) => {
-              if (program && program.departmentId) {
-                // Set department, which will load the programs for that department
-                this.scheduleForm.patchValue({
-                  departmentId: program.departmentId,
-                });
-                this.loadProgramsByDepartment(program.departmentId);
+          // Chain to get program details
+          return this.programApiService
+            .getProgramById(programId)
+            .pipe(map((program) => ({ program, programId, course })));
+        }),
+        // Process the combined result
+        tap(({ program, programId }) => {
+          if (!program || !program.departmentId) {
+            throw new Error('Invalid program data');
+          }
 
-                // Set program after a short delay to ensure programs are loaded
-                setTimeout(() => {
-                  this.scheduleForm.patchValue({ programId: programId });
-                  this.loadCoursesByProgram(programId);
-                }, 300);
-              }
+          // First batch: Set department ID and load programs for that department
+          const departmentId = program.departmentId;
+          this.scheduleForm.get('departmentId')?.setValue(departmentId);
+
+          // Pre-enable fields to avoid visible state changes
+          this.scheduleForm.get('programId')?.enable();
+          this.scheduleForm.get('courseId')?.enable();
+
+          // Load all dependent data in parallel
+          forkJoin({
+            programs:
+              this.programApiService.getProgramsByDepartment(departmentId),
+            courses: this.courseApiService.getCoursesByProgram(programId),
+          }).subscribe({
+            next: (data) => {
+              // Update the data collections
+              this.programs = data.programs;
+              this.courses = data.courses;
+
+              // Now set the values (after the data is available)
+              this.scheduleForm.patchValue({
+                programId: programId,
+                courseId: courseId,
+              });
+
+              // Complete loading
+              this.isLoading = false;
             },
-            error: (error) => {
-              console.error('Error loading program details', error);
+            error: (err) => {
+              console.error('Error loading dependent data', err);
+              this.isLoading = false;
             },
           });
-        }
-      },
-      error: (error) => {
-        console.error('Error loading course details', error);
-      },
-    });
+        }),
+        catchError((error) => {
+          console.error('Error in course loading chain:', error);
+          this.isLoading = false;
+          return EMPTY;
+        })
+      )
+      .subscribe();
   }
 
   // Add this method to handle building change
