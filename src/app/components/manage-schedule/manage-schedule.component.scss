@@ -42,3 +42,11 @@ small.text-muted {
   display: block;
   margin-top: 0.25rem;
 }
+
+.page-link {
+  cursor: pointer;
+}
+
+.pagination .page-item.disabled .page-link {
+  cursor: not-allowed;
+}

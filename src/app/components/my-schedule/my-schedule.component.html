@@ -78,13 +78,13 @@
     <table class="table table-striped table-hover">
       <thead>
         <tr>
-          <th style="cursor: pointer" (click)="sort('roomNumber')">
-            Room Number
-            <i class="bi {{ getSortIcon('roomNumber') }} ms-1"></i>
-          </th>
           <th style="cursor: pointer" (click)="sort('roomId')">
             Building
             <i class="bi {{ getSortIcon('roomId') }} ms-1"></i>
+          </th>
+          <th style="cursor: pointer" (click)="sort('roomNumber')">
+            Room No.
+            <i class="bi {{ getSortIcon('roomNumber') }} ms-1"></i>
           </th>
           <th style="cursor: pointer" (click)="sort('courseCode')">
             Code
@@ -110,8 +110,8 @@
       </thead>
       <tbody>
         <tr *ngFor="let schedule of paginatedSchedules">
-          <td>{{ schedule.roomNumber }}</td>
           <td>{{ getBuildingByRoomId(schedule.roomId) }}</td>
+          <td>{{ schedule.roomNumber }}</td>
           <td>{{ schedule.courseCode }}</td>
           <td>{{ schedule.courseDescription }}</td>
           <td>{{ formatDate(schedule.date) }}</td>
