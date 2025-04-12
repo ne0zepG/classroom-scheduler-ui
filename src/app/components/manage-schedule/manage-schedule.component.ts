@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -21,7 +20,7 @@ import { AddScheduleComponent } from '../add-schedule/add-schedule.component';
 @Component({
   selector: 'app-manage-schedule',
   standalone: true,
-  imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './manage-schedule.component.html',
   styleUrl: './manage-schedule.component.scss',
 })
@@ -397,6 +396,9 @@ export class ManageScheduleComponent implements OnInit {
       startIndex,
       endIndex
     );
+
+    // Update the select all checkbox state based on the new page
+    this.updateSelectAllState();
   }
 
   /**
@@ -476,20 +478,24 @@ export class ManageScheduleComponent implements OnInit {
   toggleSelectAll(): void {
     this.selectAll = !this.selectAll;
 
-    for (const schedule of this.filteredSchedules) {
+    // Only select schedules on the current page
+    this.paginatedSchedules.forEach((schedule) => {
       this.selectedSchedules[schedule.id] = this.selectAll;
-    }
+    });
 
     this.updateSelectionCount();
   }
 
   updateSelectAllState(): void {
-    const filteredIds = this.filteredSchedules.map((s) => s.id);
-    const selectedFilteredCount = filteredIds.filter(
-      (id) => this.selectedSchedules[id]
-    ).length;
-    this.selectAll =
-      selectedFilteredCount === filteredIds.length && filteredIds.length > 0;
+    if (this.paginatedSchedules.length === 0) {
+      this.selectAll = false;
+      return;
+    }
+    // Check if all schedules on the current page are selected
+    const allSelected = this.paginatedSchedules.every(
+      (schedule) => this.selectedSchedules[schedule.id]
+    );
+    this.selectAll = allSelected;
   }
 
   clearSelections(): void {

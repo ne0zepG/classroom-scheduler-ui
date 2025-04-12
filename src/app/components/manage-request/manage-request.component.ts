@@ -1,5 +1,4 @@
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -19,13 +18,7 @@ import { formatTimeTo12Hour } from '../../utils/timeFormatter';
 @Component({
   selector: 'app-manage-request',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    HttpClientModule,
-    FormsModule,
-    NgbDropdownModule,
-  ],
+  imports: [CommonModule, RouterModule, FormsModule, NgbDropdownModule],
   templateUrl: './manage-request.component.html',
   styleUrl: './manage-request.component.scss',
 })

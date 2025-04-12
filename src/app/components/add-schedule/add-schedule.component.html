@@ -48,7 +48,6 @@
           id="roomId"
           formControlName="roomId"
           (change)="onRoomChange($event)"
-          [disabled]="!selectedBuilding"
         >
           <option value="" disabled selected>Select a room</option>
           <option *ngFor="let room of filteredRooms" [value]="room.id">
@@ -261,7 +260,6 @@
             scheduleForm.controls['programId'].invalid &&
             scheduleForm.controls['programId'].touched
           "
-          [disabled]="!scheduleForm.controls['departmentId'].value"
         >
           <option value="" disabled selected>Select Program</option>
           <option *ngFor="let program of programs" [value]="program.id">
@@ -288,7 +286,6 @@
           scheduleForm.controls['courseId'].invalid &&
           scheduleForm.controls['courseId'].touched
         "
-        [disabled]="!scheduleForm.controls['programId'].value"
       >
         <option value="" disabled selected>Select Course</option>
         <option *ngFor="let course of courses" [value]="course.id">
