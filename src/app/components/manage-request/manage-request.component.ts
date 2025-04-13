@@ -119,7 +119,8 @@ export class ManageRequestComponent implements OnInit {
     schedule: Schedule,
     newStatus: 'PENDING' | 'APPROVED' | 'REJECTED'
   ): void {
-    if (schedule.status === newStatus) return; // No change needed
+    // No change needed if the status is already the same
+    if (schedule.status === newStatus) return;
 
     this.scheduleApiService
       .updateScheduleStatus(schedule.id, newStatus)
@@ -290,7 +291,8 @@ export class ManageRequestComponent implements OnInit {
   changePageSize(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.itemsPerPage = Number(select.value);
-    this.currentPage = 1; // Reset to first page when changing page size
+    // Reset to first page when changing page size
+    this.currentPage = 1;
     this.applyFilters();
   }
 

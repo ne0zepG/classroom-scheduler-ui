@@ -55,6 +55,7 @@ export class StatisticsComponent implements OnInit {
     this.generateTimeSlots();
   }
 
+  // Loads all buildings and sets the initial state
   loadBuildings(): void {
     this.isLoading = true;
     this.roomApiService.getAllRooms().subscribe({
@@ -74,6 +75,7 @@ export class StatisticsComponent implements OnInit {
     });
   }
 
+  // Sets the selected building and filters rooms accordingly
   onBuildingChange(): void {
     this.filteredRooms = this.rooms.filter(
       (room) => room.buildingName === this.selectedBuilding
@@ -82,6 +84,7 @@ export class StatisticsComponent implements OnInit {
     this.resetSchedules();
   }
 
+  // Sets the selected room and loads schedules for the selected room
   onRoomChange(): void {
     if (this.selectedRoom) {
       this.loadSchedules();
@@ -90,12 +93,14 @@ export class StatisticsComponent implements OnInit {
     }
   }
 
+  // Sets the selected date and loads schedules for the selected room
   onDateChange(): void {
     if (this.selectedRoom) {
       this.loadSchedules();
     }
   }
 
+  // Loads schedules for the selected room and date
   loadSchedules(): void {
     if (!this.selectedRoom) return;
 
@@ -138,6 +143,7 @@ export class StatisticsComponent implements OnInit {
     });
   }
 
+  // Generates time slots for morning and afternoon
   generateTimeSlots(): void {
     this.morningSlots = [];
     this.afternoonSlots = [];
@@ -159,6 +165,7 @@ export class StatisticsComponent implements OnInit {
     }
   }
 
+  // Updates the time slots based on the selected date and schedules
   updateTimeSlots(): void {
     // Reset all slots
     this.generateTimeSlots();
@@ -210,6 +217,7 @@ export class StatisticsComponent implements OnInit {
     console.log('Afternoon slots after update:', this.afternoonSlots);
   }
 
+  // Parses the time string and returns a Date object
   parseTimeSlot(timeString: string, dateString: string): Date {
     // Create a date object using the selected date instead of today
     const selectedDate = new Date(dateString);
@@ -231,15 +239,18 @@ export class StatisticsComponent implements OnInit {
     );
   }
 
+  // Resets the schedules and time slots
   resetSchedules(): void {
     this.schedules = [];
     this.generateTimeSlots();
   }
 
+  // Toggles the view between morning and afternoon
   switchView(view: 'morning' | 'afternoon'): void {
     this.currentView = view;
   }
 
+  // Returns the appropriate class for the status badge based on the status value
   getStatusBadgeClass(status: string): string {
     switch (status?.toUpperCase()) {
       case 'APPROVED':
