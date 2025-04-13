@@ -8,11 +8,13 @@ The Classroom Scheduler simplifies the process of managing classroom resources. 
 
 ## ✨ Key Features
 
-- **Interactive Scheduling Management**: Create, view, edit, and delete classroom reservations.
-- **Advanced Filtering**: Search schedules by room, building, purpose, date, or status.
-- **Room Details**: View room features including projector and computer availability.
-- **Status Tracking**: Monitor schedule approval status (Pending, Approved, Rejected).
-- **Sortable Data**: Organize information with customizable sorting capabilities.
+- **Interactive Scheduling Management**: Create, view, edit, and delete classroom schedules.
+- **Advanced Filtering and Sorting**: Search and organize schedules by building, room, date, or status.
+- **Room Details**: View room details, including capacity, projector, and computer availability.
+- **Recurring Schedules**: Set up recurring schedules with customizable patterns and end dates.
+- **Status Tracking**: Monitor schedule approval status (Pending, Approved, Rejected) with visual indicators.
+- **Conflict Detection**: Automatically detect and resolve scheduling conflicts.
+- **Statistics Dashboard**: Visualize classroom usage and availability with detailed statistics.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
 
 ## 🛠️ Technology Stack
