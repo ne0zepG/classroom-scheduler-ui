@@ -124,14 +124,43 @@ export class ScheduleApiService {
   // Error handling
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred!';
+
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Server-side error
-      errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+      // Server-side error - extract the message from response body
+      if (
+        error.error &&
+        typeof error.error === 'object' &&
+        error.error.message
+      ) {
+        // Extract message from JSON error object
+        errorMessage = error.error.message;
+      } else if (typeof error.error === 'string') {
+        try {
+          // Try to parse error if it's a JSON string
+          const errorObj = JSON.parse(error.error);
+          if (errorObj.message) {
+            errorMessage = errorObj.message;
+          } else {
+            errorMessage = error.error;
+          }
+        } catch (e) {
+          // If not valid JSON, use the string as is
+          errorMessage = error.error;
+        }
+      } else {
+        // Default fallback message
+        errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
+      }
     }
-    console.error(errorMessage);
-    return throwError(() => new Error(errorMessage));
+
+    // Create an enhanced error with status code for better handling in components
+    const enhancedError = new Error(errorMessage) as any;
+    enhancedError.status = error.status;
+
+    console.error('API Error:', errorMessage);
+    return throwError(() => enhancedError);
   }
 }

@@ -307,8 +307,13 @@
   </div>
 
   <!-- Display error message if any -->
-  <div *ngIf="errorMessage" class="alert alert-danger">
-    {{ errorMessage }}
+  <div
+    *ngIf="errorMessage"
+    class="alert alert-danger d-flex align-items-center"
+    role="alert"
+  >
+    <i class="bi bi-exclamation-triangle-fill text-danger me-2 fs-4"></i>
+    <pre class="mb-0">{{ errorMessage }}</pre>
   </div>
 </div>
 
