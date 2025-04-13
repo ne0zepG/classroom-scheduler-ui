@@ -424,7 +424,7 @@ export class AddScheduleComponent implements OnInit {
         courseId: Number(formValue.courseId),
         courseCode: selectedCourse?.courseCode || '',
         courseDescription: selectedCourse?.description || '',
-        // Note: status is preserved from the existing schedule
+        // Status is set to PENDING in all Edit Requests through backend logic
       };
 
       // Call the update API
