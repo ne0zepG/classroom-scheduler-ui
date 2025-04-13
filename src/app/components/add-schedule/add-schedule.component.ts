@@ -8,15 +8,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { Course, CourseApiService } from '../../services/courseApi';
-import { Department, DepartmentApiService } from '../../services/departmentApi';
-import { Program, ProgramApiService } from '../../services/programApi';
-import { Room } from '../../services/roomApi';
-import {
-  RecurringScheduleRequest,
-  Schedule,
-  ScheduleApiService,
-} from '../../services/scheduleApi';
 import {
   catchError,
   EMPTY,
@@ -26,6 +17,15 @@ import {
   tap,
   throwError,
 } from 'rxjs';
+import { Course, CourseApiService } from '../../services/courseApi';
+import { Department, DepartmentApiService } from '../../services/departmentApi';
+import { Program, ProgramApiService } from '../../services/programApi';
+import { Room } from '../../services/roomApi';
+import {
+  RecurringScheduleRequest,
+  Schedule,
+  ScheduleApiService,
+} from '../../services/scheduleApi';
 
 @Component({
   selector: 'app-add-schedule',
@@ -111,7 +111,7 @@ export class AddScheduleComponent implements OnInit {
 
   // Initialize the component
   ngOnInit(): void {
-    // Sort rooms for dropdown (keep this part)
+    // Sort rooms for dropdown
     this.rooms.sort((a, b) => {
       if (a.buildingName !== b.buildingName) {
         return a.buildingName.localeCompare(b.buildingName);
@@ -129,6 +129,7 @@ export class AddScheduleComponent implements OnInit {
 
     // Set up the form controls
     this.scheduleForm.get('roomId')?.disable();
+    this.scheduleForm.get('departmentId')?.disable();
     this.scheduleForm.get('programId')?.disable();
     this.scheduleForm.get('courseId')?.disable();
 
@@ -142,7 +143,12 @@ export class AddScheduleComponent implements OnInit {
       // Set the selected building based on the selected room
       if (this.selectedRoom) {
         this.selectedBuilding = this.selectedRoom.buildingName;
-        this.onBuildingChange(); // Filter rooms for this building
+        // Filter rooms for this building
+        this.onBuildingChange();
+
+        // Enable the roomId field and  department field since we have the prerequisite data
+        this.scheduleForm.get('roomId')?.enable();
+        this.scheduleForm.get('departmentId')?.enable();
       }
 
       // Format the date properly for the date input (YYYY-MM-DD)
@@ -156,7 +162,7 @@ export class AddScheduleComponent implements OnInit {
       const startTime = this.existingSchedule.startTime.substring(0, 5);
       const endTime = this.existingSchedule.endTime.substring(0, 5);
 
-      // For edit mode, fetch the course details to get program and department
+      // In edit mode, fetch the course details to get program and department
       this.loadCourseDetails(this.existingSchedule.courseId);
 
       // Update the form with existing values
@@ -168,7 +174,7 @@ export class AddScheduleComponent implements OnInit {
         courseId: this.existingSchedule.courseId,
       });
 
-      // For edit mode, store the original user info
+      // In edit mode, store the original user info
       this.userId = this.existingSchedule.userId;
       this.userName = this.existingSchedule.userName;
     }
@@ -195,7 +201,8 @@ export class AddScheduleComponent implements OnInit {
           programId: '',
           courseId: '',
         });
-        this.courses = []; // Clear courses when department changes
+        // Clear courses when department changes
+        this.courses = [];
       },
       error: (error) => {
         console.error('Error loading programs for department', error);
@@ -244,13 +251,16 @@ export class AddScheduleComponent implements OnInit {
             throw new Error('Invalid program data');
           }
 
-          // First batch: Set department ID and load programs for that department
+          // Set department ID and load programs for that department
           const departmentId = program.departmentId;
           this.scheduleForm.get('departmentId')?.setValue(departmentId);
 
-          // Pre-enable fields to avoid visible state changes
-          this.scheduleForm.get('programId')?.enable();
-          this.scheduleForm.get('courseId')?.enable();
+          // Enable the fields in edit mode
+          if (this.isEditMode) {
+            this.scheduleForm.get('departmentId')?.enable();
+            this.scheduleForm.get('programId')?.enable();
+            this.scheduleForm.get('courseId')?.enable();
+          }
 
           // Load all dependent data in parallel
           forkJoin({
@@ -263,7 +273,7 @@ export class AddScheduleComponent implements OnInit {
               this.programs = data.programs;
               this.courses = data.courses;
 
-              // Now set the values (after the data is available)
+              // Set the values (after the data is available)
               this.scheduleForm.patchValue({
                 programId: programId,
                 courseId: courseId,
@@ -287,7 +297,7 @@ export class AddScheduleComponent implements OnInit {
       .subscribe();
   }
 
-  // Add this method to handle building change
+  // Method to handle building change
   onBuildingChange(): void {
     this.buildingTouched = true;
 
@@ -296,11 +306,17 @@ export class AddScheduleComponent implements OnInit {
       .filter((room) => room.buildingName === this.selectedBuilding)
       .sort((a, b) => a.roomNumber.localeCompare(b.roomNumber));
 
-    // Enable/disable room control based on building selection
+    // Enable/disable department, program, and course controls based on building selection
     if (this.selectedBuilding) {
       this.scheduleForm.get('roomId')?.enable();
+      this.scheduleForm.get('departmentId')?.disable();
+      this.scheduleForm.get('programId')?.disable();
+      this.scheduleForm.get('courseId')?.disable();
     } else {
       this.scheduleForm.get('roomId')?.disable();
+      this.scheduleForm.get('departmentId')?.disable();
+      this.scheduleForm.get('programId')?.disable();
+      this.scheduleForm.get('courseId')?.disable();
     }
 
     // Reset room selection if building is changed
@@ -361,6 +377,15 @@ export class AddScheduleComponent implements OnInit {
     const selectElement = event.target as HTMLSelectElement;
     const roomId = Number(selectElement.value);
     this.selectedRoom = this.rooms.find((room) => room.id === roomId) || null;
+
+    // Enable/disable department, program, and course controls based on room selection
+    if (this.selectedRoom) {
+      this.scheduleForm.get('departmentId')?.enable();
+    } else {
+      this.scheduleForm.get('departmentId')?.disable();
+      this.scheduleForm.get('programId')?.disable();
+      this.scheduleForm.get('courseId')?.disable();
+    }
   }
 
   // Handle form submission
@@ -513,6 +538,7 @@ export class AddScheduleComponent implements OnInit {
     return this.daysOfWeek.every((d) => !d.selected);
   }
 
+  // ** Helper function to format time **/
   private formatTime(time: string | { hour: number; minute: number }): string {
     let hours: number;
     let minutes: number;

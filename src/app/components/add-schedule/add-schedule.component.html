@@ -18,7 +18,7 @@
 
 <div class="modal-body">
   <form [formGroup]="scheduleForm" (ngSubmit)="onSubmit()">
-    <!-- Room selection -->
+    <!-- Building and Room selection -->
     <div class="row mb-3">
       <div class="col-md-6">
         <label for="buildingSelect" class="form-label">Building</label>
@@ -198,7 +198,7 @@
         </div>
       </div>
 
-      <!-- Days of week selection (show only if recurring) - moved into the same row -->
+      <!-- Days of week selection (show only if recurring) in the same row -->
       <div class="col-md-8 mb-3" *ngIf="isRecurring">
         <label class="form-label">Repeat On</label>
         <div class="d-flex flex-wrap gap-2">
@@ -319,7 +319,7 @@
     type="button"
     class="btn btn-primary"
     [disabled]="
-      scheduleForm.invalid || isLoading || (isRecurring && areNoDaysSelected())
+      !scheduleForm.valid || isLoading || (isRecurring && areNoDaysSelected())
     "
     (click)="onSubmit()"
   >

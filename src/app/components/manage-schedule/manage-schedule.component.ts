@@ -419,7 +419,8 @@ export class ManageScheduleComponent implements OnInit {
   changePageSize(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.itemsPerPage = Number(select.value);
-    this.currentPage = 1; // Reset to first page when changing page size
+    // Reset to first page when changing page size
+    this.currentPage = 1;
     this.applyFilters();
   }
 
@@ -486,18 +487,19 @@ export class ManageScheduleComponent implements OnInit {
     this.updateSelectionCount();
   }
 
+  // Check if all schedules on the current page are selected
   updateSelectAllState(): void {
     if (this.paginatedSchedules.length === 0) {
       this.selectAll = false;
       return;
     }
-    // Check if all schedules on the current page are selected
     const allSelected = this.paginatedSchedules.every(
       (schedule) => this.selectedSchedules[schedule.id]
     );
     this.selectAll = allSelected;
   }
 
+  // Clear all selections
   clearSelections(): void {
     this.selectedSchedules = {};
     this.selectedCount = 0;
