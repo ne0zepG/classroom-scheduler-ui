@@ -297,7 +297,6 @@ export class AddScheduleComponent implements OnInit {
       .subscribe();
   }
 
-  // Method to handle building change
   onBuildingChange(): void {
     this.buildingTouched = true;
 
@@ -412,6 +411,7 @@ export class AddScheduleComponent implements OnInit {
       (course) => course.id === Number(formValue.courseId)
     );
 
+    // Handle update schedule
     if (this.isEditMode && this.existingSchedule) {
       // Prepare updated schedule object
       const updatedSchedule: Schedule = {
@@ -436,11 +436,17 @@ export class AddScheduleComponent implements OnInit {
             this.scheduleUpdated.emit(result);
             this.activeModal.close(result);
           },
-          error: (error: { message: any }) => {
+          error: (error: any) => {
             this.isLoading = false;
-            this.errorMessage = `Failed to update schedule: ${
-              error.message || 'Unknown error'
-            }`;
+
+            if (error.status === 409) {
+              // Format the conflict message
+              this.errorMessage = this.formatConflictMessage(error.message);
+            } else {
+              this.errorMessage = `Failed to update schedule: ${
+                error.message || 'Unknown error'
+              }`;
+            }
           },
         });
     } else {
@@ -488,11 +494,17 @@ export class AddScheduleComponent implements OnInit {
               this.scheduleAdded.emit(createdSchedules[0]);
               this.activeModal.close(createdSchedules);
             },
-            error: (error) => {
+            error: (error: any) => {
               this.isLoading = false;
-              this.errorMessage = `Failed to create schedules: ${
-                error.message || 'Unknown error'
-              }`;
+
+              if (error.status === 409) {
+                // Format the conflict message
+                this.errorMessage = this.formatConflictMessage(error.message);
+              } else {
+                this.errorMessage = `Failed to create schedule: ${
+                  error.message || 'Unknown error'
+                }`;
+              }
             },
           });
       } else {
@@ -519,11 +531,17 @@ export class AddScheduleComponent implements OnInit {
               this.scheduleAdded.emit(createdSchedule);
               this.activeModal.close(createdSchedule);
             },
-            error: (error) => {
+            error: (error: any) => {
               this.isLoading = false;
-              this.errorMessage = `Failed to create schedule: ${
-                error.message || 'Unknown error'
-              }`;
+
+              if (error.status === 409) {
+                // Format the conflict message
+                this.errorMessage = this.formatConflictMessage(error.message);
+              } else {
+                this.errorMessage = `Failed to create schedule: ${
+                  error.message || 'Unknown error'
+                }`;
+              }
             },
           });
       }
@@ -538,7 +556,33 @@ export class AddScheduleComponent implements OnInit {
     return this.daysOfWeek.every((d) => !d.selected);
   }
 
-  // ** Helper function to format time **/
+  /**
+   *  Helper function to format the conflict message
+   * @param message
+   * @returns
+   */
+  private formatConflictMessage(message: string): string {
+    // Check if the message contains multiple conflicts
+    if (message.includes('•')) {
+      // Split the message into lines based on the bullet point
+      const lines = message.split('•').map((line) => line.trim());
+
+      // Reconstruct the message with proper formatting
+      return `${lines[0]}\n${lines
+        .slice(1)
+        .map((line) => `• ${line}`)
+        .join('\n')}`;
+    }
+
+    // If no bullet points, return the message as is
+    return message;
+  }
+
+  /**
+   *  Helper function to format time to HH:MM:00
+   * @param time
+   * @returns
+   */
   private formatTime(time: string | { hour: number; minute: number }): string {
     let hours: number;
     let minutes: number;
