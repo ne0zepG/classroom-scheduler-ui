@@ -1,0 +1,25 @@
+<div class="modal-header bg-danger text-white">
+  <h4 class="modal-title">Schedule Conflict Detected</h4>
+  <button
+    type="button"
+    class="btn-close btn-close-white"
+    aria-label="Close"
+    (click)="dismiss()"
+  ></button>
+</div>
+
+<div class="modal-body">
+  <div class="d-flex align-items-start mb-3">
+    <i class="bi bi-exclamation-triangle-fill text-danger fs-1 me-3"></i>
+    <div>
+      <h5>Cannot schedule this room</h5>
+      <pre class="mb-0 error-message">{{ message }}</pre>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="close()">
+    Close
+  </button>
+</div>

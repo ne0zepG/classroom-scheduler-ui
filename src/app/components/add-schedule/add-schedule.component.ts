@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import {
   catchError,
   EMPTY,
@@ -17,6 +17,7 @@ import {
   tap,
   throwError,
 } from 'rxjs';
+import { ConflictModalComponent } from '../../modals/conflict-modal/conflict-modal.component';
 import { Course, CourseApiService } from '../../services/courseApi';
 import { Department, DepartmentApiService } from '../../services/departmentApi';
 import { Program, ProgramApiService } from '../../services/programApi';
@@ -76,6 +77,7 @@ export class AddScheduleComponent implements OnInit {
     private courseApiService: CourseApiService,
     private departmentApiService: DepartmentApiService,
     private programApiService: ProgramApiService,
+    private modalService: NgbModal,
     public activeModal: NgbActiveModal
   ) {
     this.scheduleForm = this.fb.group({
@@ -440,8 +442,11 @@ export class AddScheduleComponent implements OnInit {
             this.isLoading = false;
 
             if (error.status === 409) {
-              // Format the conflict message
-              this.errorMessage = this.formatConflictMessage(error.message);
+              // Format the conflict message and show conflict modal
+              const formattedMessage = this.formatConflictMessage(
+                error.message
+              );
+              this.openConflictModal(formattedMessage);
             } else {
               this.errorMessage = `Failed to update schedule: ${
                 error.message || 'Unknown error'
@@ -498,10 +503,13 @@ export class AddScheduleComponent implements OnInit {
               this.isLoading = false;
 
               if (error.status === 409) {
-                // Format the conflict message
-                this.errorMessage = this.formatConflictMessage(error.message);
+                // Format the conflict message and show conflict modal
+                const formattedMessage = this.formatConflictMessage(
+                  error.message
+                );
+                this.openConflictModal(formattedMessage);
               } else {
-                this.errorMessage = `Failed to create schedule: ${
+                this.errorMessage = `Failed to create recurring schedule: ${
                   error.message || 'Unknown error'
                 }`;
               }
@@ -535,8 +543,11 @@ export class AddScheduleComponent implements OnInit {
               this.isLoading = false;
 
               if (error.status === 409) {
-                // Format the conflict message
-                this.errorMessage = this.formatConflictMessage(error.message);
+                // Format the conflict message and show conflict modal
+                const formattedMessage = this.formatConflictMessage(
+                  error.message
+                );
+                this.openConflictModal(formattedMessage);
               } else {
                 this.errorMessage = `Failed to create schedule: ${
                   error.message || 'Unknown error'
@@ -576,6 +587,20 @@ export class AddScheduleComponent implements OnInit {
 
     // If no bullet points, return the message as is
     return message;
+  }
+
+  /**
+   *  Helper function to open the conflict modal
+   * @param message
+   */
+  private openConflictModal(message: string): void {
+    const modalRef = this.modalService.open(ConflictModalComponent, {
+      centered: true,
+      backdrop: 'static',
+      size: 'lg',
+    });
+
+    modalRef.componentInstance.message = message;
   }
 
   /**
